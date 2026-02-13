@@ -6,12 +6,15 @@ import lombok.Data;
 
 import java.time.LocalDate;
 
-@Data
 @Builder
+@Data
 public class LoginResponse {
 
-    private String token;
+    private String accessToken;
+    private String refreshToken;
+
     private Long id;
+    private String userName;
     private String email;
     private String fullName;
     private String phoneNumber;

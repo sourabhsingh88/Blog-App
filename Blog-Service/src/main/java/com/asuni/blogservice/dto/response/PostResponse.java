@@ -14,14 +14,16 @@ public class PostResponse {
 
     private Long id;
     private Long userId;
+    private String username;
     private String title;
     private String description;
     private Priority priority;
     private boolean isTrue;
     private LocalDateTime createdAt;
 
-    private int likeCount;
-    private int commentCount;
+    private long likeCount;
+    private long commentCount;
+
 
     private List<MediaResponse> media;
 }

@@ -41,6 +41,7 @@ public class RegistrationServiceImpl implements RegistrationService {
         User user = User.builder()
                 .email(request.getEmail())
                 .fullName(request.getFullName())
+                .username(request.getUsername())
                 .phoneNumber(request.getPhoneNumber())
                 .gender(request.getGender())
                 .dateOfBirth(request.getDateOfBirth())

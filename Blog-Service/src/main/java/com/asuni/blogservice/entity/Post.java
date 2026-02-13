@@ -1,15 +1,11 @@
-package com.asuni.blogservice.entity ;
-
+package com.asuni.blogservice.entity;
 
 import com.asuni.blogservice.enums.Priority;
-import jakarta.persistence.Entity;
 import jakarta.persistence.*;
-import jakarta.persistence.Table;
 import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.UUID;
 
 @Entity
 @Table(name = "posts")
@@ -23,9 +19,9 @@ public class Post {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    /* ✅ External reference only */
+    @Column(name = "user_id", nullable = false)
     private Long userId;
-
 
     @Column(nullable = false, length = 200)
     private String title;
@@ -37,17 +33,13 @@ public class Post {
     @Column(nullable = false)
     private Priority priority;
 
-//    @Column(name = "is_true")
-//    private boolean isTrue = false;
-
     @Column(name = "is_deleted")
     private boolean isDeleted = false;
 
     private LocalDateTime createdAt;
-
     private LocalDateTime updatedAt;
 
-    // Relationships
+    /* Relationships */
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Media> mediaList;

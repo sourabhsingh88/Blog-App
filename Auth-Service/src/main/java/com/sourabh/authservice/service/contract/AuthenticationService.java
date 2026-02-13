@@ -16,4 +16,8 @@ public interface AuthenticationService {
      * Verifies OTP and returns AUTH token
      */
     String verifyPhoneLoginOtp(VerifyPhoneOtpRequest request);
+
+    LoginResponse refreshToken(RefreshTokenRequest request);
+
+     Long getUserIdByUsername(String username);
 }

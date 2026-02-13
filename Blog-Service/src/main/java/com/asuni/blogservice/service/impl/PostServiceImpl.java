@@ -1,10 +1,13 @@
 package com.asuni.blogservice.service.impl;
 
+import com.asuni.blogservice.client.AuthClient;
 
 import com.asuni.blogservice.dto.request.CreatePostRequest;
 import com.asuni.blogservice.dto.request.UpdatePostRequest;
 import com.asuni.blogservice.dto.response.PostResponse;
 import com.asuni.blogservice.entity.Post;
+import com.asuni.blogservice.exceptions.NotFoundException;
+import com.asuni.blogservice.exceptions.UnauthorizedException;
 import com.asuni.blogservice.repository.PostRepository;
 import com.asuni.blogservice.repository.TruePostRepository;
 import com.asuni.blogservice.service.contract.PostService;
@@ -13,14 +16,16 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+
 @Service
 @RequiredArgsConstructor
 public class PostServiceImpl implements PostService {
 
     private final PostRepository postRepository;
-    private  final TruePostRepository truePostRepository ;
+    private final TruePostRepository truePostRepository;
+    private final AuthClient authFeignClient;
 
-
+    /* ===================== CREATE ===================== */
 
     @Override
     public PostResponse createPost(CreatePostRequest request, Long userId) {
@@ -32,19 +37,20 @@ public class PostServiceImpl implements PostService {
                 .priority(request.getPriority())
                 .build();
 
-        Post saved = postRepository.save(post);
-
-        return mapToResponse(saved);
+        return mapToResponse(postRepository.save(post));
     }
+
+    /* ===================== UPDATE ===================== */
 
     @Override
     public PostResponse updatePost(Long postId, UpdatePostRequest request, Long userId) {
 
         Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new RuntimeException("Post not found"));
+                .orElseThrow(() -> new NotFoundException("Post not found"));
 
-        if (!post.getUserId().equals(userId))
-            throw new RuntimeException("Unauthorized");
+        if (!post.getUserId().equals(userId)) {
+            throw new UnauthorizedException("You are not allowed to update this post");
+        }
 
         post.setTitle(request.getTitle());
         post.setDescription(request.getDescription());
@@ -53,24 +59,29 @@ public class PostServiceImpl implements PostService {
         return mapToResponse(postRepository.save(post));
     }
 
+    /* ===================== DELETE ===================== */
+
     @Override
     public void deletePost(Long postId, Long userId) {
 
         Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new RuntimeException("Post not found"));
+                .orElseThrow(() -> new NotFoundException("Post not found"));
 
-        if (!post.getUserId().equals(userId))
-            throw new RuntimeException("Unauthorized");
+        if (!post.getUserId().equals(userId)) {
+            throw new UnauthorizedException("You are not allowed to delete this post");
+        }
 
         post.setDeleted(true);
         postRepository.save(post);
     }
 
+    /* ===================== GET ===================== */
+
     @Override
     public PostResponse getPostById(Long postId) {
 
         Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new RuntimeException("Post not found"));
+                .orElseThrow(() -> new NotFoundException("Post not found"));
 
         return mapToResponse(post);
     }
@@ -83,18 +94,46 @@ public class PostServiceImpl implements PostService {
                 .toList();
     }
 
-    private PostResponse mapToResponse(Post post) {
-        return PostResponse.builder()
-                .id(post.getId())
-                .userId(post.getUserId())
-                .title(post.getTitle())
-                .description(post.getDescription())
-                .priority(post.getPriority())
-                .createdAt(post.getCreatedAt())
-                .likeCount(post.getLikes() != null ? post.getLikes().size() : 0)
-                .commentCount(post.getComments() != null ? post.getComments().size() : 0)
-                .build();
+    /* ===================== SEARCH ===================== */
+
+    @Override
+    public List<PostResponse> searchByTitle(String title) {
+        return postRepository
+                .findByIsDeletedFalseAndTitleContainingIgnoreCase(title)
+                .stream()
+                .map(this::mapToResponse)
+                .toList();
     }
+
+
+
+    @Override
+    public List<PostResponse> searchByUsername(String username) {
+
+        List<String> usernames = authFeignClient.searchUsers(
+                username, 0, 20, "username"
+        );
+
+        if (usernames.isEmpty()) {
+            return List.of();
+        }
+
+        return usernames.stream()
+                .flatMap(name -> {
+                    Long userId = authFeignClient.getUserIdByUsername(name);
+                    return postRepository
+                            .findByUserIdAndIsDeletedFalse(userId)
+                            .stream();
+                })
+                .map(this::mapToResponse)
+                .toList();
+    }
+
+
+
+
+    /* ===================== USER BASED ===================== */
+
     @Override
     public List<PostResponse> getPostsLikedByUser(Long userId) {
         return postRepository.findPostsLikedByUser(userId)
@@ -111,7 +150,6 @@ public class PostServiceImpl implements PostService {
                 .toList();
     }
 
-
     @Override
     public List<PostResponse> getCommentedPostsByUser(Long userId) {
         return postRepository.findCommentedPostsByUser(userId)
@@ -120,4 +158,18 @@ public class PostServiceImpl implements PostService {
                 .toList();
     }
 
+    /* ===================== MAPPER ===================== */
+
+    private PostResponse mapToResponse(Post post) {
+        return PostResponse.builder()
+                .id(post.getId())
+                .userId(post.getUserId())
+                .title(post.getTitle())
+                .description(post.getDescription())
+                .priority(post.getPriority())
+                .createdAt(post.getCreatedAt())
+                .likeCount((int) postRepository.countLikesByPostId(post.getId()))
+                .commentCount((int) postRepository.countCommentsByPostId(post.getId()))
+                .build();
+    }
 }

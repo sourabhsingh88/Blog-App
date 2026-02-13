@@ -24,4 +24,9 @@ public interface PostService {
 
     List<PostResponse> getCommentedPostsByUser(Long userId);
 
+    List<PostResponse> searchByTitle(String title);
+
+    List<PostResponse> searchByUsername(String username);
+
+
 }

@@ -1,4 +1,4 @@
-package com.asuni.blogservice.security;
+package com.asuni.blogservice.config;
 
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;

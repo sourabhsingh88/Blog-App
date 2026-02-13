@@ -5,75 +5,93 @@ import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import javax.crypto.SecretKey;
+import java.security.Key;
 import java.util.Date;
 
 @Component
 public class JwtUtil {
 
-    private final SecretKey key;
-    private final long authExpiryMillis;
-    private final long otpExpiryMillis;
+    @Value("${jwt.secret}")
+    private String secret;
 
-    public JwtUtil(
-            @Value("${jwt.secret}") String secret,
-            @Value("${jwt.expiry.minutes}") int authExpiryMinutes,
-            @Value("${jwt.otp.expiry.minutes}") int otpExpiryMinutes
-    ) {
-        this.key = Keys.hmacShaKeyFor(secret.getBytes());
-        this.authExpiryMillis = authExpiryMinutes * 60 * 1000L;
-        this.otpExpiryMillis = otpExpiryMinutes * 60 * 1000L;
+    private static final long ACCESS_TOKEN_VALIDITY = 1000 * 60 * 15;      // 15 minutes
+    private static final long REFRESH_TOKEN_VALIDITY = 1000L * 60 * 60 * 24 * 7; // 7 days
+
+    /* ================= KEY ================= */
+
+    private Key getSigningKey() {
+        return Keys.hmacShaKeyFor(secret.getBytes());
     }
 
-    /* ===================== AUTH TOKEN ===================== */
+    /* ================= ACCESS TOKEN ================= */
 
-    public String generateAuthToken(String email) {
+    public String generateAuthToken(Long userId, String email) {
+
         return Jwts.builder()
-                .setSubject(email)
-                .claim("type", "AUTH")
+                .setSubject(String.valueOf(userId))   // ✅ SUBJECT = USER ID
+                .claim("email", email)                // optional
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + authExpiryMillis))
-                .signWith(key, SignatureAlgorithm.HS256)
+                .setExpiration(new Date(System.currentTimeMillis() + ACCESS_TOKEN_VALIDITY))
+                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
 
-    /* ===================== OTP BASED TOKENS ===================== */
+    /* ================= REFRESH TOKEN ================= */
 
-    public String generateOtpToken(String email, String phone, String type) {
+    public String generateRefreshToken(Long userId) {
 
-        JwtBuilder builder = Jwts.builder()
-                .setSubject(email)
-                .claim("type", type)
+        return Jwts.builder()
+                .setSubject(String.valueOf(userId))   // ✅ USER ID
+                .claim("type", "REFRESH")
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + otpExpiryMillis));
-
-        if (phone != null) {
-            builder.claim("phone", phone);
-        }
-
-        return builder.signWith(key, SignatureAlgorithm.HS256).compact();
+                .setExpiration(new Date(System.currentTimeMillis() + REFRESH_TOKEN_VALIDITY))
+                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
+                .compact();
     }
 
-    /* ===================== VALIDATION ===================== */
 
-    public Claims validateAndExtract(String token) {
-        return Jwts.parserBuilder()
-                .setSigningKey(key)
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
-    }
+    /* ================= VALIDATION ================= */
 
     public boolean validateToken(String token) {
         try {
-            validateAndExtract(token);
+            Jwts.parserBuilder()
+                    .setSigningKey(getSigningKey())
+                    .build()
+                    .parseClaimsJws(token);
             return true;
         } catch (JwtException | IllegalArgumentException ex) {
             return false;
         }
     }
 
-    public String extractEmail(String token) {
-        return validateAndExtract(token).getSubject();
+    public Long extractUserId(String token) {
+
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(getSigningKey())
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+
+        return Long.parseLong(claims.getSubject());
     }
+
+    public Claims validateAndExtract(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(getSigningKey())
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+    }
+    public String generateOtpToken(String email, String phone, String type) {
+
+        return Jwts.builder()
+                .setSubject(email)
+                .claim("phone", phone)
+                .claim("type", type)
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + 5 * 60 * 1000)) // 5 min
+                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
+                .compact();
+    }
+
 }

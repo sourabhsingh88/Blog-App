@@ -1,6 +1,7 @@
 package com.sourabh.authservice.controller;
 
 import com.sourabh.authservice.dto.request.*;
+import com.sourabh.authservice.dto.response.LoginResponse;
 import com.sourabh.authservice.entity.User;
 import com.sourabh.authservice.exceptions.UnauthorizedException;
 import com.sourabh.authservice.service.contract.*;
@@ -23,6 +24,10 @@ public class AuthController {
     private final AuthenticationService authenticationService;
     private final ProfileService profileService;
     private final PasswordService passwordService;
+
+
+
+
 
     /* ===================== SIGNUP ===================== */
     @PostMapping("/signup")
@@ -160,5 +165,13 @@ public class AuthController {
         return ResponseEntity.ok(
                 Map.of("message", "Password changed successfully")
         );
+
     }
+    @PostMapping("/refresh")
+    public ResponseEntity<LoginResponse> refresh(
+            @RequestBody RefreshTokenRequest request
+    ) {
+        return ResponseEntity.ok(authenticationService.refreshToken(request));
+    }
+
 }
