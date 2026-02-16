@@ -3,8 +3,10 @@ package com.asuni.blogservice.repository;
 import com.asuni.blogservice.entity.Post;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface PostRepository extends JpaRepository<Post, Long> {
 
@@ -15,15 +17,68 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     long countCommentsByPostId(Long postId);
 
 
-    List<Post> findByIsDeletedFalse();
+//    List<Post> findByIsDeletedFalse();
+//
+//    List<Post> findByUserIdAndIsDeletedFalse(Long userId);
 
-    List<Post> findByUserIdAndIsDeletedFalse(Long userId);
+    @Query("""
+       SELECT DISTINCT p
+       FROM Post p
+       LEFT JOIN FETCH p.mediaList
+       WHERE p.userId = :userId
+       AND p.isDeleted = false
+       """)
+    List<Post> findByUserIdWithMedia(@Param("userId") Long userId);
 
-    List<Post> findByIsDeletedFalseAndTitleContainingIgnoreCase(String title);
 
-    @Query("SELECT l.post FROM Like l WHERE l.userId = :userId")
+//    List<Post> findByIsDeletedFalseAndTitleContainingIgnoreCase(String title);
+
+    @Query("""
+    SELECT DISTINCT p
+    FROM Like l
+    JOIN l.post p
+    LEFT JOIN FETCH p.mediaList
+    WHERE l.userId = :userId
+      AND p.isDeleted = false
+""")
     List<Post> findPostsLikedByUser(Long userId);
 
-    @Query("SELECT DISTINCT c.post FROM Comment c WHERE c.userId = :userId")
+
+    @Query("""
+       SELECT DISTINCT p
+       FROM Comment c
+       JOIN c.post p
+       LEFT JOIN FETCH p.mediaList
+       WHERE c.userId = :userId
+       AND p.isDeleted = false
+       """)
     List<Post> findCommentedPostsByUser(Long userId);
+
+
+    @Query("""
+SELECT DISTINCT p
+FROM Post p
+LEFT JOIN FETCH p.mediaList
+WHERE p.isDeleted = false
+""")
+    List<Post> findAllWithMedia();
+
+
+    @Query("""
+       SELECT DISTINCT p
+       FROM Post p
+       LEFT JOIN FETCH p.mediaList
+       WHERE p.isDeleted = false
+       AND LOWER(p.title) LIKE LOWER(CONCAT('%', :title, '%'))
+       """)
+    List<Post> searchByTitleWithMedia(@Param("title") String title);
+
+    @Query("""
+       SELECT DISTINCT p
+       FROM Post p
+       LEFT JOIN FETCH p.mediaList
+       WHERE p.id = :postId
+       """)
+    Optional<Post> findByIdWithMedia(@Param("postId") Long postId);
+
 }

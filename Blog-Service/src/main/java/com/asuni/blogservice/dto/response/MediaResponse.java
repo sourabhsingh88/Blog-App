@@ -10,6 +10,10 @@ import lombok.*;
 @Builder
 public class MediaResponse {
 
-    private String mediaUrl;
-    private MediaType mediaType;
-}
+
+        private Long id;
+        private String mediaUrl;
+        private MediaType mediaType;
+    }
+
+

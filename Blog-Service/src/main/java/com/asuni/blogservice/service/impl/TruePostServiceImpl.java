@@ -8,6 +8,7 @@ import com.asuni.blogservice.repository.TruePostRepository;
 import com.asuni.blogservice.service.contract.TruePostService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -32,7 +33,7 @@ public class TruePostServiceImpl implements TruePostService {
 
         postTrueRepository.save(postTrue);
     }
-
+    @Transactional
     @Override
     public void unmarkTrue(Long postId, Long userId) {
         postTrueRepository.deleteByPost_IdAndUserId(postId, userId);

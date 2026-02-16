@@ -102,6 +102,14 @@ public class User {
     @Column(nullable = false)
     private LocalDate dateOfBirth;
 
+    @Column(length = 500 , nullable = false)
+    private String aadharImageUrl;
+
+    @Builder.Default
+    @Column(nullable = false)
+    private boolean aadhaarVerified = false;
+
+
     @Builder.Default
     @Column(nullable = false)
     private boolean emailVerified = false;
@@ -128,4 +136,5 @@ public class User {
     public void onUpdate() {
         this.updatedAt = LocalDateTime.now();
     }
+
 }

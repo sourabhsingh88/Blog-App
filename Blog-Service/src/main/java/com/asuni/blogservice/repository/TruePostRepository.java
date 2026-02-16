@@ -14,8 +14,16 @@ public interface TruePostRepository extends JpaRepository<TruePost, Long> {
 
     void deleteByPost_IdAndUserId(Long postId, Long userId);
 
-    @Query("SELECT t.post FROM TruePost t WHERE t.userId = :userId")
+    @Query("""
+    SELECT DISTINCT p
+    FROM TruePost t
+    JOIN t.post p
+    LEFT JOIN FETCH p.mediaList
+    WHERE t.userId = :userId
+      AND p.isDeleted = false
+""")
     List<Post> findPostsMarkedTrueByUser(Long userId);
+
 
 
 }

@@ -4,15 +4,20 @@ import com.asuni.blogservice.client.AuthClient;
 
 import com.asuni.blogservice.dto.request.CreatePostRequest;
 import com.asuni.blogservice.dto.request.UpdatePostRequest;
+import com.asuni.blogservice.dto.response.MediaResponse;
 import com.asuni.blogservice.dto.response.PostResponse;
 import com.asuni.blogservice.entity.Post;
 import com.asuni.blogservice.exceptions.NotFoundException;
 import com.asuni.blogservice.exceptions.UnauthorizedException;
+import com.asuni.blogservice.repository.MediaRepository;
 import com.asuni.blogservice.repository.PostRepository;
 import com.asuni.blogservice.repository.TruePostRepository;
+import com.asuni.blogservice.service.contract.MediaService;
 import com.asuni.blogservice.service.contract.PostService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -23,12 +28,19 @@ public class PostServiceImpl implements PostService {
 
     private final PostRepository postRepository;
     private final TruePostRepository truePostRepository;
+    private final MediaRepository mediaRepository;
+    private final MediaService mediaService;
     private final AuthClient authFeignClient;
 
-    /* ===================== CREATE ===================== */
 
-    @Override
-    public PostResponse createPost(CreatePostRequest request, Long userId) {
+
+
+    @Transactional
+    public PostResponse createPost(
+            CreatePostRequest request,
+            List<MultipartFile> mediaFiles,
+            Long userId
+    ) {
 
         Post post = Post.builder()
                 .userId(userId)
@@ -37,27 +49,72 @@ public class PostServiceImpl implements PostService {
                 .priority(request.getPriority())
                 .build();
 
-        return mapToResponse(postRepository.save(post));
+        post = postRepository.save(post);
+
+        if (mediaFiles != null && !mediaFiles.isEmpty()) {
+            for (MultipartFile file : mediaFiles) {
+                mediaService.uploadMedia(post.getId(), file, userId);
+            }
+        }
+
+        return mapToResponse(post);
     }
 
     /* ===================== UPDATE ===================== */
 
     @Override
-    public PostResponse updatePost(Long postId, UpdatePostRequest request, Long userId) {
+    @Transactional
+    public PostResponse updatePost(
+            Long postId,
+            UpdatePostRequest request,
+            List<MultipartFile> mediaFiles,
+            Long userId
+    ) {
 
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new NotFoundException("Post not found"));
+
+        if (post.isDeleted()) {
+            throw new NotFoundException("Post not found");
+        }
 
         if (!post.getUserId().equals(userId)) {
             throw new UnauthorizedException("You are not allowed to update this post");
         }
 
-        post.setTitle(request.getTitle());
-        post.setDescription(request.getDescription());
-        post.setPriority(request.getPriority());
+        // TEXT UPDATE
+        if (request.getTitle() != null) {
+            post.setTitle(request.getTitle());
+        }
 
-        return mapToResponse(postRepository.save(post));
+        if (request.getDescription() != null) {
+            post.setDescription(request.getDescription());
+        }
+
+        if (request.getPriority() != null) {
+            post.setPriority(request.getPriority());
+        }
+
+        // REMOVE MEDIA
+        if (request.getRemoveMediaIds() != null && !request.getRemoveMediaIds().isEmpty()) {
+            mediaRepository.deleteByIdInAndPostId(
+                    request.getRemoveMediaIds(),
+                    postId
+            );
+        }
+
+        // ADD NEW MEDIA
+        if (mediaFiles != null && !mediaFiles.isEmpty()) {
+            for (MultipartFile file : mediaFiles) {
+                mediaService.uploadMedia(postId, file, userId);
+            }
+        }
+
+        postRepository.save(post);
+
+        return mapToResponse(post);
     }
+
 
     /* ===================== DELETE ===================== */
 
@@ -78,28 +135,42 @@ public class PostServiceImpl implements PostService {
     /* ===================== GET ===================== */
 
     @Override
+    @Transactional(readOnly = true)
     public PostResponse getPostById(Long postId) {
-
-        Post post = postRepository.findById(postId)
+        Post post = postRepository.findByIdWithMedia(postId)
                 .orElseThrow(() -> new NotFoundException("Post not found"));
-
         return mapToResponse(post);
     }
 
+
+
     @Override
+    @Transactional(readOnly = true)
     public List<PostResponse> getAllPosts() {
-        return postRepository.findByIsDeletedFalse()
+        return postRepository.findAllWithMedia()
                 .stream()
                 .map(this::mapToResponse)
                 .toList();
     }
+
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<PostResponse> getTruePostsByUser(Long userId) {
+        return truePostRepository.findPostsMarkedTrueByUser(userId)
+                .stream()
+                .map(this::mapToResponse)
+                .toList();
+    }
+
+
 
     /* ===================== SEARCH ===================== */
 
     @Override
+    @Transactional(readOnly = true)
     public List<PostResponse> searchByTitle(String title) {
-        return postRepository
-                .findByIsDeletedFalseAndTitleContainingIgnoreCase(title)
+        return postRepository.searchByTitleWithMedia(title)
                 .stream()
                 .map(this::mapToResponse)
                 .toList();
@@ -107,7 +178,9 @@ public class PostServiceImpl implements PostService {
 
 
 
+
     @Override
+    @Transactional(readOnly = true)
     public List<PostResponse> searchByUsername(String username) {
 
         List<String> usernames = authFeignClient.searchUsers(
@@ -122,7 +195,7 @@ public class PostServiceImpl implements PostService {
                 .flatMap(name -> {
                     Long userId = authFeignClient.getUserIdByUsername(name);
                     return postRepository
-                            .findByUserIdAndIsDeletedFalse(userId)
+                            .findByUserIdWithMedia(userId)
                             .stream();
                 })
                 .map(this::mapToResponse)
@@ -130,11 +203,10 @@ public class PostServiceImpl implements PostService {
     }
 
 
-
-
     /* ===================== USER BASED ===================== */
 
     @Override
+    @Transactional(readOnly = true)
     public List<PostResponse> getPostsLikedByUser(Long userId) {
         return postRepository.findPostsLikedByUser(userId)
                 .stream()
@@ -142,15 +214,11 @@ public class PostServiceImpl implements PostService {
                 .toList();
     }
 
-    @Override
-    public List<PostResponse> getTruePostsByUser(Long userId) {
-        return truePostRepository.findPostsMarkedTrueByUser(userId)
-                .stream()
-                .map(this::mapToResponse)
-                .toList();
-    }
+
+
 
     @Override
+    @Transactional(readOnly = true)
     public List<PostResponse> getCommentedPostsByUser(Long userId) {
         return postRepository.findCommentedPostsByUser(userId)
                 .stream()
@@ -158,9 +226,22 @@ public class PostServiceImpl implements PostService {
                 .toList();
     }
 
+
     /* ===================== MAPPER ===================== */
 
     private PostResponse mapToResponse(Post post) {
+
+        List<MediaResponse> mediaResponses =
+                post.getMediaList() != null
+                        ? post.getMediaList().stream()
+                        .map(m -> new MediaResponse(
+                                m.getId(),
+                                m.getMediaUrl(),
+                                m.getMediaType()
+                        ))
+                        .toList()
+                        : List.of();
+
         return PostResponse.builder()
                 .id(post.getId())
                 .userId(post.getUserId())
@@ -170,6 +251,8 @@ public class PostServiceImpl implements PostService {
                 .createdAt(post.getCreatedAt())
                 .likeCount((int) postRepository.countLikesByPostId(post.getId()))
                 .commentCount((int) postRepository.countCommentsByPostId(post.getId()))
+                .media(mediaResponses)
                 .build();
     }
+
 }

@@ -5,16 +5,21 @@ import com.asuni.blogservice.dto.request.CreatePostRequest;
 import com.asuni.blogservice.dto.request.UpdatePostRequest;
 import com.asuni.blogservice.dto.response.PostResponse;
 import com.asuni.blogservice.exceptions.UnauthorizedException;
+import com.asuni.blogservice.repository.MediaRepository;
 import com.asuni.blogservice.service.contract.*;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/v1/posts")
 @RequiredArgsConstructor
@@ -25,6 +30,8 @@ public class BlogController {
     private final CommentService commentService;
     private final MediaService mediaService;
     private final TruePostService truePostService;
+    private final MediaRepository mediaRepository;
+
 
     private Long getUserId(Authentication authentication) {
         if (authentication == null || !authentication.isAuthenticated()) {
@@ -40,26 +47,72 @@ public class BlogController {
 
     /* ===================== POST CRUD ===================== */
 
-    @PostMapping
+//    @PostMapping
+//    public ResponseEntity<PostResponse> createPost(
+//            @Valid @RequestBody CreatePostRequest request,
+//            Authentication authentication
+//    ) {
+//        Long userId = getUserId(authentication);
+//        return ResponseEntity
+//                .status(HttpStatus.CREATED)
+//                .body(postService.createPost(request, userId));
+//    }
+
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<PostResponse> createPost(
-            @Valid @RequestBody CreatePostRequest request,
+
+            @Valid @ModelAttribute CreatePostRequest request,
+
+            @RequestPart(value = "media", required = false)
+            List<MultipartFile> media,
+
             Authentication authentication
     ) {
         Long userId = getUserId(authentication);
+
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(postService.createPost(request, userId));
+                .body(postService.createPost(request, media, userId));
     }
 
-    @PutMapping("/{postId}")
+
+
+
+
+//    @PutMapping(value = "/{postId}", consumes = "multipart/form-data")
+//    public ResponseEntity<PostResponse> updatePost(
+//            @PathVariable Long postId,
+//            @ModelAttribute UpdatePostRequest request,
+//            Authentication authentication
+//    ) {
+//        Long userId = getUserId(authentication);
+//        return ResponseEntity.ok(postService.updatePost(postId, request, userId));
+//    }
+
+    @PatchMapping(value = "/{postId}",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<PostResponse> updatePost(
+
             @PathVariable Long postId,
-            @Valid @RequestBody UpdatePostRequest request,
+
+            @RequestPart("request")
+            UpdatePostRequest request,
+
+            @RequestPart(value = "media", required = false)
+            List<MultipartFile> media,
+
             Authentication authentication
     ) {
+
         Long userId = getUserId(authentication);
-        return ResponseEntity.ok(postService.updatePost(postId, request, userId));
+
+        return ResponseEntity.ok(
+                postService.updatePost(postId, request, media, userId)
+        );
     }
+
+
+
 
     @DeleteMapping("/{postId}")
     public ResponseEntity<Void> deletePost(
@@ -130,6 +183,20 @@ public class BlogController {
         Long userId = getUserId(authentication);
         commentService.addComment(postId, userId, request);
         return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+
+    @DeleteMapping("/comments/{commentId}")
+    public ResponseEntity<?> deleteComment(
+            @PathVariable Long commentId,
+            Authentication authentication
+    ) {
+        Long userId = getUserId(authentication);
+
+        commentService.deleteComment(commentId, userId);
+
+        return ResponseEntity.ok(
+                Map.of("message", "Comment deleted successfully")
+        );
     }
 
     /* ===================== MEDIA ===================== */

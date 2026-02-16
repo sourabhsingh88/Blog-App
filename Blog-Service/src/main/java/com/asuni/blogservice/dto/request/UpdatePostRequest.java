@@ -7,6 +7,9 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 @Getter
 @Setter
@@ -15,13 +18,13 @@ import lombok.*;
 @Builder
 public class UpdatePostRequest {
 
-    @NotBlank
     @Size(max = 200)
     private String title;
 
-    @NotBlank
     private String description;
 
-    @NotNull
     private Priority priority;
+    private List<Long> removeMediaIds;
+    private List<MultipartFile> newMedia;
+
 }
