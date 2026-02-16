@@ -252,8 +252,13 @@ Or stop the process using that port
 
 - [ ] API Gateway integration
 - [ ] Docker containerization
-- [ ] Centralized logging
 - [ ] API documentation (Swagger)
+- [ ] Role-Based Access Control (RBAC)
+- [ ] Redis caching for tokens
+- [ ] Docker containerization
+- [ ] CI/CD pipeline
+- [ ] Centralized logging
+- [ ] WebSocket for real-time notifications
 
 ---
 
