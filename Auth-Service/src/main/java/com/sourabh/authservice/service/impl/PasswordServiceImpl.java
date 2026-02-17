@@ -43,7 +43,7 @@ public class PasswordServiceImpl implements PasswordService {
     @Override
     public String verifyResetOtp(VerifyResetOtpRequest request) {
 
-        var claims = jwtUtil.validateAndExtract(request.getResetOtpToken());
+        var claims = jwtUtil.validateAndExtract(request.getReset_otp_token());
 
         if (!claims.get("type").equals("RESET_OTP")) {
             throw new BadRequestException("Invalid token type");
@@ -67,11 +67,11 @@ public class PasswordServiceImpl implements PasswordService {
     @Override
     public void resetPassword(ResetPasswordRequest request) {
 
-        if (!request.getNewPassword().equals(request.getConfirmPassword())) {
+        if (!request.getNew_password().equals(request.getConfirm_password())) {
             throw new BadRequestException("Passwords do not match");
         }
 
-        var claims = jwtUtil.validateAndExtract(request.getResetPasswordToken());
+        var claims = jwtUtil.validateAndExtract(request.getReset_password_token());
 
         if (!claims.get("type").equals("RESET_PASSWORD")) {
             throw new BadRequestException("Invalid token type");
@@ -82,21 +82,21 @@ public class PasswordServiceImpl implements PasswordService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new NotFoundException("User not found"));
 
-        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        user.setPassword(passwordEncoder.encode(request.getNew_password()));
         userRepository.save(user);
     }
     @Override
     public void changePassword(User user, ChangePasswordRequest request) {
 
-        if (!passwordEncoder.matches(request.getOldPassword(), user.getPassword())) {
+        if (!passwordEncoder.matches(request.getOld_password(), user.getPassword())) {
             throw new BadRequestException("Old password incorrect");
         }
 
-        if (!request.getNewPassword().equals(request.getConfirmPassword())) {
+        if (!request.getNew_password().equals(request.getConfirm_password())) {
             throw new BadRequestException("Passwords do not match");
         }
 
-        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        user.setPassword(passwordEncoder.encode(request.getNew_password()));
         userRepository.save(user);
     }
 

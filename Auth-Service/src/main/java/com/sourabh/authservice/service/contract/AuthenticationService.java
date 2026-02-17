@@ -8,7 +8,7 @@ public interface AuthenticationService {
     LoginResponse login(LoginRequest request);
 
     /**
-     * Generates OTP and returns phoneLoginToken
+     * Generates OTP and returns phone_login_token
      */
     String sendPhoneLoginOtp(LoginPhoneRequest request);
 

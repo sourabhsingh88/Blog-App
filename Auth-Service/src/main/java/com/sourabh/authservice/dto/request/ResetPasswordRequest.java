@@ -8,12 +8,12 @@ import lombok.Data;
 public class ResetPasswordRequest {
 
     @NotBlank
-    private String resetPasswordToken;
+    private String reset_password_token;
 
     @NotBlank
     @Size(min = 8)
-    private String newPassword;
+    private String new_password;
 
     @NotBlank
-    private String confirmPassword;
+    private String confirm_password;
 }

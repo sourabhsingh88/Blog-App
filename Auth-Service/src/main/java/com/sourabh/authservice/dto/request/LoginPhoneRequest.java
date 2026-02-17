@@ -12,6 +12,6 @@ public class LoginPhoneRequest {
             regexp = "^[6-9]\\d{9}$",
             message = "Invalid Indian phone number"
     )
-    private String phoneNumber;
+    private String phone_number;
 
 }

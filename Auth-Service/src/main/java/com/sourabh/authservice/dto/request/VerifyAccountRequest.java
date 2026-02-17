@@ -8,13 +8,13 @@ import lombok.Data;
 public class VerifyAccountRequest {
 
     @NotBlank
-    private String verificationToken;
+    private String verification_token;
 
 
     @Pattern(regexp = "^\\d{6}$", message = "OTP must be 6 digits")
-    private String emailOtp;
+    private String email_otp;
 
 
     @Pattern(regexp = "^\\d{6}$", message = "OTP must be 6 digits")
-    private String phoneOtp;
+    private String phone_otp;
 }

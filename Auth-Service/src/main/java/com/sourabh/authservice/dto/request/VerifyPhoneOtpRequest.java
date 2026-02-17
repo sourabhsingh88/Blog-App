@@ -8,7 +8,7 @@ import lombok.Data;
 public class VerifyPhoneOtpRequest {
 
     @NotBlank
-    private String phoneLoginToken;
+    private String phone_login_token;
 
     @NotBlank
     @Pattern(regexp = "^\\d{6}$", message = "OTP must be 6 digits")

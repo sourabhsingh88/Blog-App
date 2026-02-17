@@ -29,48 +29,56 @@ public class RegistrationServiceImpl implements RegistrationService {
 
     @Override
     @Transactional
-    public String signup(SignupRequest request, MultipartFile aadhaarImage) {
+    public String signup(SignupRequest request,
+                         MultipartFile aadhaarImage,
+                         MultipartFile profilePicture) {
 
-        if (request.getPassword() == null || request.getConfirmPassword() == null) {
-            throw new BadRequestException("Password and Confirm Password are required");
-        }
-
-        if (!request.getPassword().equals(request.getConfirmPassword())) {
+        if (!request.getPassword().equals(request.getConfirm_password())) {
             throw new BadRequestException("Passwords do not match");
         }
-
 
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new BadRequestException("Email already registered");
         }
 
-        if (userRepository.existsByPhoneNumber(request.getPhoneNumber())) {
+        if (userRepository.existsByPhoneNumber(request.getPhone_number())) {
             throw new BadRequestException("Phone already registered");
+        }
+
+        if (userRepository.existsByUsername(request.getUsername())) {
+            throw new BadRequestException("Username already taken");
         }
 
         if (aadhaarImage == null || aadhaarImage.isEmpty()) {
             throw new BadRequestException("Aadhaar image is required");
         }
 
-        if (!aadhaarImage.getContentType().startsWith("image")) {
-            throw new BadRequestException("Aadhaar must be an image file");
+        if (profilePicture == null || profilePicture.isEmpty()) {
+            throw new BadRequestException("Profile picture is required");
         }
 
-        // Upload to S3
-        String aadhaarUrl = fileStorageService.uploadFile(
-                aadhaarImage,
-                "aadhar"
-        );
+        if (!aadhaarImage.getContentType().startsWith("image")) {
+            throw new BadRequestException("Aadhaar must be an image");
+        }
+
+        if (!profilePicture.getContentType().startsWith("image")) {
+            throw new BadRequestException("Profile picture must be an image");
+        }
+
+        String aadhaarUrl = fileStorageService.uploadFile(aadhaarImage, "aadhaar");
+        String profileUrl = fileStorageService.uploadFile(profilePicture, "profile");
 
         User user = User.builder()
                 .email(request.getEmail())
-                .fullName(request.getFullName())
+                .fullName(request.getFull_name())
                 .username(request.getUsername())
-                .phoneNumber(request.getPhoneNumber())
+                .phoneNumber(request.getPhone_number())
                 .gender(request.getGender())
-                .dateOfBirth(request.getDateOfBirth())
+                .dateOfBirth(request.getDate_of_birth())
+                .preferredLanguage(request.getPreferred_language())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .aadharImageUrl(aadhaarUrl)
+                .profilePictureUrl(profileUrl)
                 .emailVerified(false)
                 .phoneNumberVerified(false)
                 .build();
@@ -86,6 +94,66 @@ public class RegistrationServiceImpl implements RegistrationService {
                 "BOTH_VERIFICATION"
         );
     }
+
+//    @Override
+//    @Transactional
+//    public String signup(SignupRequest request, MultipartFile aadhaar_image) {
+//
+//        if (request.getPassword() == null || request.getConfirm_password() == null) {
+//            throw new BadRequestException("Password and Confirm Password are required");
+//        }
+//
+//        if (!request.getPassword().equals(request.getConfirm_password())) {
+//            throw new BadRequestException("Passwords do not match");
+//        }
+//
+//
+//        if (userRepository.existsByEmail(request.getEmail())) {
+//            throw new BadRequestException("Email already registered");
+//        }
+//
+//        if (userRepository.existsByPhoneNumber(request.getPhone_number())) {
+//            throw new BadRequestException("Phone already registered");
+//        }
+//
+//        if (aadhaar_image == null || aadhaar_image.isEmpty()) {
+//            throw new BadRequestException("Aadhaar image is required");
+//        }
+//
+//        if (!aadhaar_image.getContentType().startsWith("image")) {
+//            throw new BadRequestException("Aadhaar must be an image file");
+//        }
+//
+//        // Upload to S3
+//        String aadhaarUrl = fileStorageService.uploadFile(
+//                aadhaar_image,
+//                "aadhar"
+//        );
+//
+//        User user = User.builder()
+//                .email(request.getEmail())
+//                .full_name(request.getFull_name())
+//                .username(request.getUsername())
+//                .phone_number(request.getPhone_number())
+//                .gender(request.getGender())
+//                .date_of_birth(request.getDate_of_birth())
+//                .password(passwordEncoder.encode(request.getPassword()))
+//                .aadharImageUrl(aadhaarUrl)
+//                .emailVerified(false)
+//                .phoneNumberVerified(false)
+//                .build();
+//
+//        userRepository.save(user);
+//
+//        otpService.generateEmailOtp(user.getEmail(), OtpType.EMAIL_VERIFICATION);
+//        otpService.generatePhoneOtp(user.getPhone_number(), OtpType.PHONE_VERIFICATION);
+//
+//        return jwtUtil.generateOtpToken(
+//                user.getEmail(),
+//                user.getPhone_number(),
+//                "BOTH_VERIFICATION"
+//        );
+//    }
 
     @Override
     @Transactional

@@ -9,8 +9,9 @@ public interface RegistrationService {
     /**
      * Registers user and returns verification token
      */
-    String signup(SignupRequest request, MultipartFile aadharImage);
-
+    String signup(SignupRequest request,
+                  MultipartFile aadhaarImage,
+                  MultipartFile profilePicture);
     public void hardDeleteAccount(Long userId, String password) ;
 
 //    void softDeleteAccount(User user, String password);

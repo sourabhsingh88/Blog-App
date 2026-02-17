@@ -45,18 +45,7 @@ public class BlogController {
         }
     }
 
-    /* ===================== POST CRUD ===================== */
 
-//    @PostMapping
-//    public ResponseEntity<PostResponse> createPost(
-//            @Valid @RequestBody CreatePostRequest request,
-//            Authentication authentication
-//    ) {
-//        Long userId = getUserId(authentication);
-//        return ResponseEntity
-//                .status(HttpStatus.CREATED)
-//                .body(postService.createPost(request, userId));
-//    }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<PostResponse> createPost(
@@ -79,15 +68,7 @@ public class BlogController {
 
 
 
-//    @PutMapping(value = "/{postId}", consumes = "multipart/form-data")
-//    public ResponseEntity<PostResponse> updatePost(
-//            @PathVariable Long postId,
-//            @ModelAttribute UpdatePostRequest request,
-//            Authentication authentication
-//    ) {
-//        Long userId = getUserId(authentication);
-//        return ResponseEntity.ok(postService.updatePost(postId, request, userId));
-//    }
+
 
     @PatchMapping(value = "/{postId}",
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -184,6 +165,7 @@ public class BlogController {
         commentService.addComment(postId, userId, request);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
+    /* =====================DELETE COMMENT ===================== */
 
     @DeleteMapping("/comments/{commentId}")
     public ResponseEntity<?> deleteComment(
@@ -223,6 +205,8 @@ public class BlogController {
         truePostService.markAsTrue(postId, userId);
         return ResponseEntity.noContent().build(); // better
     }
+
+    /* ===================== UNMARK TRUE ===================== */
 
     @DeleteMapping("/{postId}/true")
     public ResponseEntity<Void> unmarkTrue(

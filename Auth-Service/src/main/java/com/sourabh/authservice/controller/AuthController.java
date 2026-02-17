@@ -33,38 +33,52 @@ public class AuthController {
 
 
 
+    /* ===================== Signup ===================== */
 
-    /* ===================== SIGNUP ===================== */
-//    @PostMapping("/signup")
-//    public ResponseEntity<?> signup(@Valid @RequestBody SignupRequest request) {
-//
-//        String verificationToken = registrationService.signup(request);
-//
-//        return ResponseEntity
-//                .status(HttpStatus.CREATED)
-//                .body(Map.of(
-//                        "message", "User registered successfully",
-//                        "verificationToken", verificationToken
-//                ));
-//    }
-//    @PostMapping(value = "/signup", consumes = "multipart/form-data")
+//    @Operation(summary = "User Signup")
+//    @PostMapping(
+//            value = "/signup",
+//            consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+//    )
 //    public ResponseEntity<?> signup(
-//            @ModelAttribute SignupRequest request,
+//            @ParameterObject @ModelAttribute SignupRequest request,
 //            @RequestParam("aadharImage") MultipartFile aadharImage
 //    ) {
 //
-//        String verificationToken =
+//        String verification_token =
 //                registrationService.signup(request, aadharImage);
 //
 //        return ResponseEntity
 //                .status(HttpStatus.CREATED)
 //                .body(Map.of(
 //                        "message", "User registered successfully",
-//                        "verificationToken", verificationToken
+//                        "verification_token", verification_token
 //                ));
 //    }
-//
-//
+
+    @Operation(summary = "User Signup")
+    @PostMapping(
+            value = "/signup",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+    )
+    public ResponseEntity<?> signup(
+            @ParameterObject @ModelAttribute SignupRequest request,
+            @RequestParam("aadhaar_image") MultipartFile aadhaarImage,
+            @RequestParam("profile_picture") MultipartFile profilePicture
+    ) {
+
+        String verificationToken =
+                registrationService.signup(request, aadhaarImage, profilePicture);
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(Map.of(
+                        "message", "User registered successfully",
+                        "verification_token", verificationToken
+                ));
+    }
+
+
     /* ===================== VERIFY ACCOUNT ===================== */
     @PostMapping("/verify")
     public ResponseEntity<?> verifyAccount(
@@ -77,27 +91,6 @@ public class AuthController {
         );
     }
 
-    @Operation(summary = "User Signup")
-    @PostMapping(
-            value = "/signup",
-            consumes = MediaType.MULTIPART_FORM_DATA_VALUE
-    )
-    public ResponseEntity<?> signup(
-            @ParameterObject @ModelAttribute SignupRequest request,
-            @RequestParam("aadharImage") MultipartFile aadharImage
-    ) {
-
-        String verificationToken =
-                registrationService.signup(request, aadharImage);
-
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(Map.of(
-                        "message", "User registered successfully",
-                        "verificationToken", verificationToken
-                ));
-    }
-
     /* ===================== LOGIN (EMAIL) ===================== */
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request) {
@@ -107,32 +100,11 @@ public class AuthController {
         );
     }
 
-    /* ===================== UPDATE PROFILE ===================== */
-//    @PatchMapping(value = "/update", consumes = "multipart/form-data")
-//    public ResponseEntity<?> updateProfile(
-//            @AuthenticationPrincipal User user,
-//            @ModelAttribute UpdateUserRequest request
-//    ) {
-//        if (user == null) {
-//            throw new UnauthorizedException("Unauthorized");
-//        }
-//
-//        String verificationToken = profileService.updateProfile(user, request);
-//
-//        if (verificationToken != null) {
-//            return ResponseEntity
-//                    .status(HttpStatus.ACCEPTED)
-//                    .body(Map.of(
-//                            "message", "Verification required",
-//                            "verificationToken", verificationToken
-//                    ));
-//        }
-//
-//        return ResponseEntity.ok(
-//                Map.of("message", "Profile updated successfully")
-//        );
-//    }
-    @PatchMapping(value = "/update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    /* ===================== Update ===================== */
+    @PatchMapping(
+            value = "/update",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+    )
     public ResponseEntity<?> updateProfile(
             Authentication authentication,
             @ModelAttribute UpdateUserRequest request
@@ -142,16 +114,22 @@ public class AuthController {
             throw new UnauthorizedException("Unauthorized");
         }
 
-        Long userId = Long.valueOf(authentication.getName());
+        Long userId;
+        try {
+            userId = Long.parseLong(authentication.getName());
+        } catch (NumberFormatException ex) {
+            throw new UnauthorizedException("Invalid authentication token");
+        }
 
-        String verificationToken = profileService.updateProfile(userId, request);
+        String verificationToken =
+                profileService.updateProfile(userId, request);
 
         if (verificationToken != null) {
             return ResponseEntity
                     .status(HttpStatus.ACCEPTED)
                     .body(Map.of(
-                            "message", "Verification required",
-                            "verificationToken", verificationToken
+                            "message", "Email/Phone verification required",
+                            "verification_token", verificationToken
                     ));
         }
 
@@ -161,7 +139,36 @@ public class AuthController {
     }
 
 
-    /* ===================== LOGIN (PHONE OTP - STEP 1) ===================== */
+//    @PatchMapping(value = "/update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+//    public ResponseEntity<?> updateProfile(
+//            Authentication authentication,
+//            @ModelAttribute UpdateUserRequest request
+//    ) {
+//
+//        if (authentication == null || !authentication.isAuthenticated()) {
+//            throw new UnauthorizedException("Unauthorized");
+//        }
+//
+//        Long userId = Long.valueOf(authentication.getName());
+//
+//        String verification_token = profileService.updateProfile(userId, request);
+//
+//        if (verification_token != null) {
+//            return ResponseEntity
+//                    .status(HttpStatus.ACCEPTED)
+//                    .body(Map.of(
+//                            "message", "Verification required",
+//                            "verification_token", verification_token
+//                    ));
+//        }
+//
+//        return ResponseEntity.ok(
+//                Map.of("message", "Profile updated successfully")
+//        );
+//    }
+
+
+    /* ===================== LOGIN (PHONE OTP) ===================== */
     @PostMapping("/login/phone")
     public ResponseEntity<?> sendPhoneOtp(
             @Valid @RequestBody LoginPhoneRequest request
@@ -170,10 +177,10 @@ public class AuthController {
 
         return ResponseEntity
                 .status(HttpStatus.ACCEPTED)
-                .body(Map.of("phoneLoginToken", phoneLoginToken));
+                .body(Map.of("phone_login_token", phoneLoginToken));
     }
 
-    /* ===================== VERIFY PHONE OTP - STEP 2) ===================== */
+    /* ===================== VERIFY PHONE OTP  ===================== */
     @PostMapping("/login/phone/verify")
     public ResponseEntity<?> verifyPhoneOtp(
             @Valid @RequestBody VerifyPhoneOtpRequest request
@@ -185,7 +192,7 @@ public class AuthController {
         );
     }
 
-    /* ===================== FORGOT PASSWORD - STEP 1 ===================== */
+    /* ===================== FORGOT PASSWORD - EMAIl OTP  1 ===================== */
     @PostMapping("/password/forgot")
     public ResponseEntity<?> forgotPassword(
             @Valid @RequestBody ResetPasswordOtpRequest request
@@ -194,10 +201,10 @@ public class AuthController {
 
         return ResponseEntity
                 .status(HttpStatus.ACCEPTED)
-                .body(Map.of("resetOtpToken", resetOtpToken));
+                .body(Map.of("reset_otp_token", resetOtpToken));
     }
 
-    /* ===================== VERIFY RESET OTP - STEP 2 ===================== */
+    /* ===================== VERIFY RESET OTP  2 ===================== */
     @PostMapping("/password/verify-otp")
     public ResponseEntity<?> verifyResetOtp(
             @Valid @RequestBody VerifyResetOtpRequest request
@@ -205,11 +212,12 @@ public class AuthController {
         String resetPasswordToken = passwordService.verifyResetOtp(request);
 
         return ResponseEntity.ok(
-                Map.of("resetPasswordToken", resetPasswordToken)
+                Map.of("reset_password_token", resetPasswordToken)
         );
     }
 
-    /* ===================== RESET PASSWORD - STEP 3 ===================== */
+    /* ===================== RESET PASSWORD  3 ===================== */
+
     @PostMapping("/password/reset")
     public ResponseEntity<?> resetPassword(
             @Valid @RequestBody ResetPasswordRequest request
@@ -222,6 +230,7 @@ public class AuthController {
     }
 
     /* ===================== CHANGE PASSWORD ===================== */
+
     @PostMapping("/password/change")
     public ResponseEntity<?> changePassword(
             @AuthenticationPrincipal User user,

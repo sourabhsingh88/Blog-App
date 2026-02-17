@@ -20,4 +20,8 @@ public class LoginResponse {
     private String phoneNumber;
     private Gender gender;
     private LocalDate dateOfBirth;
+    private String preferredLanguage;
+    private String profilePictureUrl;
+
+
 }

@@ -27,7 +27,7 @@
 //    private String lastName;
 //
 //    @Column(unique = true, nullable = false)
-//    private String phoneNumber;
+//    private String phone_number;
 //
 //    @Column(nullable = false)
 //    private String city;
@@ -104,6 +104,13 @@ public class User {
 
     @Column(length = 500 , nullable = false)
     private String aadharImageUrl;
+
+    @Column(nullable = false, length = 50)
+    private String preferredLanguage;
+
+    @Column(length = 500)
+    private String profilePictureUrl;
+
 
     @Builder.Default
     @Column(nullable = false)

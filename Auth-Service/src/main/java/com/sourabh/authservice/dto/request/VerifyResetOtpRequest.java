@@ -8,7 +8,7 @@ import lombok.Data;
 public class VerifyResetOtpRequest {
 
     @NotBlank
-    private String resetOtpToken;
+    private String reset_otp_token;
 
     @NotBlank
     @Pattern(regexp = "^\\d{6}$", message = "OTP must be 6 digits")

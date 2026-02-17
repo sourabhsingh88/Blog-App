@@ -25,7 +25,7 @@ public class VerificationServiceImpl implements VerificationService {
     @Transactional
     public void verifyAccount(VerifyAccountRequest request) {
 
-        var claims = jwtUtil.validateAndExtract(request.getVerificationToken());
+        var claims = jwtUtil.validateAndExtract(request.getVerification_token());
 
         String type = claims.get("type", String.class);
         String email = claims.getSubject();
@@ -38,7 +38,7 @@ public class VerificationServiceImpl implements VerificationService {
 
             otpService.verifyEmailOtp(
                     email,
-                    request.getEmailOtp(),
+                    request.getEmail_otp(),
                     OtpType.EMAIL_VERIFICATION
             );
 
@@ -49,7 +49,7 @@ public class VerificationServiceImpl implements VerificationService {
 
             otpService.verifyPhoneOtp(
                     phone,
-                    request.getPhoneOtp(),
+                    request.getPhone_otp(),
                     OtpType.PHONE_VERIFICATION
             );
 
@@ -60,13 +60,13 @@ public class VerificationServiceImpl implements VerificationService {
 
             otpService.verifyEmailOtp(
                     email,
-                    request.getEmailOtp(),
+                    request.getEmail_otp(),
                     OtpType.EMAIL_VERIFICATION
             );
 
             otpService.verifyPhoneOtp(
                     phone,
-                    request.getPhoneOtp(),
+                    request.getPhone_otp(),
                     OtpType.PHONE_VERIFICATION
             );
 

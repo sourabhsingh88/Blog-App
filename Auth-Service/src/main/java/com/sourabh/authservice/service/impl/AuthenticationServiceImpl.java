@@ -70,7 +70,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Override
     public LoginResponse refreshToken(RefreshTokenRequest request) {
 
-        String refreshToken = request.getRefreshToken();
+        String refreshToken = request.getRefresh_token();
 
         if (!jwtUtil.validateToken(refreshToken)) {
             throw new UnauthorizedException("Invalid refresh token");
@@ -116,7 +116,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Override
     public String sendPhoneLoginOtp(LoginPhoneRequest request) {
 
-        User user = userRepository.findByPhoneNumber(request.getPhoneNumber())
+        User user = userRepository.findByPhoneNumber(request.getPhone_number())
                 .orElseThrow(() -> new NotFoundException("User not found"));
 
         if (!user.isEmailVerified() || !user.isPhoneNumberVerified()) {
@@ -138,7 +138,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Override
     public String verifyPhoneLoginOtp(VerifyPhoneOtpRequest request) {
 
-        var claims = jwtUtil.validateAndExtract(request.getPhoneLoginToken());
+        var claims = jwtUtil.validateAndExtract(request.getPhone_login_token());
 
         String type = claims.get("type", String.class);
 
