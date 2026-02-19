@@ -5,9 +5,7 @@ import com.asuni.blogservice.dto.request.CreatePostRequest;
 import com.asuni.blogservice.dto.request.UpdatePostRequest;
 import com.asuni.blogservice.dto.response.PostResponse;
 import com.asuni.blogservice.exceptions.UnauthorizedException;
-import com.asuni.blogservice.repository.MediaRepository;
 import com.asuni.blogservice.service.contract.*;
-import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -30,14 +28,13 @@ public class BlogController {
     private final CommentService commentService;
     private final MediaService mediaService;
     private final TruePostService truePostService;
-    private final MediaRepository mediaRepository;
 
+    /* ===================== AUTH UTILS ===================== */
 
     private Long getUserId(Authentication authentication) {
         if (authentication == null || !authentication.isAuthenticated()) {
             throw new UnauthorizedException("Authentication required");
         }
-
         try {
             return Long.parseLong(authentication.getName());
         } catch (Exception e) {
@@ -45,55 +42,47 @@ public class BlogController {
         }
     }
 
+    private Long getOptionalUserId(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return null;
+        }
+        try {
+            return Long.parseLong(authentication.getName());
+        } catch (Exception e) {
+            return null;
+        }
+    }
 
+    /* ===================== CREATE ===================== */
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<PostResponse> createPost(
-
             @Valid @ModelAttribute CreatePostRequest request,
-
-            @RequestPart(value = "media", required = false)
-            List<MultipartFile> media,
-
+            @RequestPart(value = "media", required = false) List<MultipartFile> media,
             Authentication authentication
     ) {
         Long userId = getUserId(authentication);
-
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(postService.createPost(request, media, userId));
     }
 
+    /* ===================== UPDATE ===================== */
 
-
-
-
-
-
-    @PatchMapping(value = "/{postId}",
-            consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PatchMapping(value = "/{postId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<PostResponse> updatePost(
-
             @PathVariable Long postId,
-
-            @RequestPart("request")
-            UpdatePostRequest request,
-
-            @RequestPart(value = "media", required = false)
-            List<MultipartFile> media,
-
+            @RequestPart("request") UpdatePostRequest request,
+            @RequestPart(value = "media", required = false) List<MultipartFile> media,
             Authentication authentication
     ) {
-
         Long userId = getUserId(authentication);
-
         return ResponseEntity.ok(
                 postService.updatePost(postId, request, media, userId)
         );
     }
 
-
-
+    /* ===================== DELETE ===================== */
 
     @DeleteMapping("/{postId}")
     public ResponseEntity<Void> deletePost(
@@ -102,33 +91,52 @@ public class BlogController {
     ) {
         Long userId = getUserId(authentication);
         postService.deletePost(postId, userId);
-        return ResponseEntity.noContent().build();   // 204
+        return ResponseEntity.noContent().build();
     }
 
+    /* ===================== READ ===================== */
+
     @GetMapping("/{postId}")
-    public ResponseEntity<PostResponse> getPost(@PathVariable Long postId) {
-        return ResponseEntity.ok(postService.getPostById(postId));
+    public ResponseEntity<PostResponse> getPost(
+            @PathVariable Long postId,
+            Authentication authentication
+    ) {
+        Long userId = getOptionalUserId(authentication);
+        return ResponseEntity.ok(
+                postService.getPostById(postId, userId)
+        );
     }
 
     @GetMapping
-    public ResponseEntity<List<PostResponse>> getAllPosts() {
-        return ResponseEntity.ok(postService.getAllPosts());
+    public ResponseEntity<List<PostResponse>> getAllPosts(Authentication authentication) {
+        Long userId = getOptionalUserId(authentication);
+        return ResponseEntity.ok(
+                postService.getAllPublicPosts(userId)
+        );
     }
 
     /* ===================== SEARCH ===================== */
 
     @GetMapping("/search/title")
     public ResponseEntity<List<PostResponse>> searchByTitle(
-            @RequestParam String title
+            @RequestParam String title,
+            Authentication authentication
     ) {
-        return ResponseEntity.ok(postService.searchByTitle(title));
+        Long userId = getOptionalUserId(authentication);
+        return ResponseEntity.ok(
+                postService.searchByTitle(title, userId)
+        );
     }
 
     @GetMapping("/search/username")
     public ResponseEntity<List<PostResponse>> searchByUsername(
-            @RequestParam String username
+            @RequestParam String username,
+            Authentication authentication
     ) {
-        return ResponseEntity.ok(postService.searchByUsername(username));
+        Long userId = getOptionalUserId(authentication);
+        return ResponseEntity.ok(
+                postService.searchByUsername(username, userId)
+        );
     }
 
     /* ===================== LIKE ===================== */
@@ -150,7 +158,7 @@ public class BlogController {
     ) {
         Long userId = getUserId(authentication);
         likeService.unlikePost(postId, userId);
-        return ResponseEntity.noContent().build();   // 204
+        return ResponseEntity.noContent().build();
     }
 
     /* ===================== COMMENT ===================== */
@@ -165,17 +173,14 @@ public class BlogController {
         commentService.addComment(postId, userId, request);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
-    /* =====================DELETE COMMENT ===================== */
 
     @DeleteMapping("/comments/{commentId}")
-    public ResponseEntity<?> deleteComment(
+    public ResponseEntity<Map<String, String>> deleteComment(
             @PathVariable Long commentId,
             Authentication authentication
     ) {
         Long userId = getUserId(authentication);
-
         commentService.deleteComment(commentId, userId);
-
         return ResponseEntity.ok(
                 Map.of("message", "Comment deleted successfully")
         );
@@ -203,10 +208,8 @@ public class BlogController {
     ) {
         Long userId = getUserId(authentication);
         truePostService.markAsTrue(postId, userId);
-        return ResponseEntity.noContent().build(); // better
+        return ResponseEntity.noContent().build();
     }
-
-    /* ===================== UNMARK TRUE ===================== */
 
     @DeleteMapping("/{postId}/true")
     public ResponseEntity<Void> unmarkTrue(
@@ -218,23 +221,37 @@ public class BlogController {
         return ResponseEntity.noContent().build();
     }
 
-    /* ===================== USER BASED ===================== */
+    /* ===================== USER-BASED ===================== */
+
+    @GetMapping("/user/me")
+    public ResponseEntity<List<PostResponse>> getMyPosts(Authentication authentication) {
+        Long userId = getUserId(authentication);
+        return ResponseEntity.ok(
+                postService.getMyPosts(userId)
+        );
+    }
 
     @GetMapping("/user/liked")
     public ResponseEntity<List<PostResponse>> getLikedPosts(Authentication authentication) {
         Long userId = getUserId(authentication);
-        return ResponseEntity.ok(postService.getPostsLikedByUser(userId));
+        return ResponseEntity.ok(
+                postService.getPostsLikedByUser(userId)
+        );
     }
 
     @GetMapping("/user/true")
     public ResponseEntity<List<PostResponse>> getTruePosts(Authentication authentication) {
         Long userId = getUserId(authentication);
-        return ResponseEntity.ok(postService.getTruePostsByUser(userId));
+        return ResponseEntity.ok(
+                postService.getTruePostsByUser(userId)
+        );
     }
 
     @GetMapping("/user/commented")
     public ResponseEntity<List<PostResponse>> getCommentedPosts(Authentication authentication) {
         Long userId = getUserId(authentication);
-        return ResponseEntity.ok(postService.getCommentedPostsByUser(userId));
+        return ResponseEntity.ok(
+                postService.getCommentedPostsByUser(userId)
+        );
     }
 }

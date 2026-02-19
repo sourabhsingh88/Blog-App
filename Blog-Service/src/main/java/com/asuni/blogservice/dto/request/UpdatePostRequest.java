@@ -3,8 +3,6 @@ package com.asuni.blogservice.dto.request;
 
 
 import com.asuni.blogservice.enums.Priority;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -23,8 +21,10 @@ public class UpdatePostRequest {
 
     private String description;
 
+    private Boolean hideUsername;
+
     private Priority priority;
-    private List<Long> removeMediaIds;
-    private List<MultipartFile> newMedia;
+    private List<Long> remove_media_ids;
+    private List<MultipartFile> new_media;
 
 }

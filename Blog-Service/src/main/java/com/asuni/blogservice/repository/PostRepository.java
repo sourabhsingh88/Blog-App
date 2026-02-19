@@ -13,6 +13,35 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Query("SELECT COUNT(l) FROM Like l WHERE l.post.id = :postId")
     long countLikesByPostId(Long postId);
 
+    @Query("""
+SELECT p FROM Post p
+LEFT JOIN FETCH p.mediaList
+WHERE p.isDeleted = false
+AND p.isUsernameHidden = false
+ORDER BY p.createdAt DESC
+""")
+    List<Post> findAllPublicWithMedia();
+
+
+    @Query("""
+SELECT p FROM Post p
+LEFT JOIN FETCH p.mediaList
+WHERE p.isDeleted = false
+AND p.isUsernameHidden = false
+AND LOWER(p.title) LIKE LOWER(CONCAT('%', :title, '%'))
+""")
+    List<Post> searchPublicByTitle(String title);
+
+    @Query("""
+SELECT p FROM Post p
+LEFT JOIN FETCH p.mediaList
+WHERE p.userId = :userId
+AND p.isDeleted = false
+AND p.isUsernameHidden = false
+""")
+    List<Post> findPublicByUserId(Long userId);
+
+
     @Query("SELECT COUNT(c) FROM Comment c WHERE c.post.id = :postId")
     long countCommentsByPostId(Long postId);
 
@@ -20,6 +49,26 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 //    List<Post> findByIsDeletedFalse();
 //
 //    List<Post> findByUserIdAndIsDeletedFalse(Long userId);
+
+    @Query("""
+SELECT p FROM Post p
+LEFT JOIN FETCH p.mediaList
+WHERE p.userId = :userId
+AND p.isDeleted = false
+AND p.isUsernameHidden = false
+""")
+    List<Post> findByUserIdAndUsernameVisible(Long userId);
+
+
+    @Query("""
+SELECT p FROM Post p
+LEFT JOIN FETCH p.mediaList
+WHERE p.userId = :userId
+AND p.isDeleted = false
+AND p.isUsernameHidden = false
+""")
+    List<Post> findByUserIdWithMediaAndUsernameVisible(Long userId);
+
 
     @Query("""
        SELECT DISTINCT p

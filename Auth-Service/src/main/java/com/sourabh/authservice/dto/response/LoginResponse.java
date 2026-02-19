@@ -10,18 +10,18 @@ import java.time.LocalDate;
 @Data
 public class LoginResponse {
 
-    private String accessToken;
-    private String refreshToken;
+    private String access_token;
+    private String refresh_token;
 
     private Long id;
-    private String userName;
+    private String user_name;
     private String email;
-    private String fullName;
-    private String phoneNumber;
+    private String full_name;
+    private String phone_number;
     private Gender gender;
-    private LocalDate dateOfBirth;
-    private String preferredLanguage;
-    private String profilePictureUrl;
+    private LocalDate date_of_birth;
+    private String preferred_language;
+    private String profile_picture_url;
 
 
 }

@@ -18,11 +18,11 @@ public class PostResponse {
     private String title;
     private String description;
     private Priority priority;
-    private boolean isTrue;
+    private boolean is_true;
     private LocalDateTime createdAt;
 
-    private long likeCount;
-    private long commentCount;
+    private long like_count;
+    private long comment_count;
 
 
     private List<MediaResponse> media;

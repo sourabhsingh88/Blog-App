@@ -5,7 +5,6 @@ import com.asuni.blogservice.dto.request.CommentRequest;
 import com.asuni.blogservice.entity.Comment;
 import com.asuni.blogservice.entity.Post;
 import com.asuni.blogservice.exceptions.NotFoundException;
-import com.asuni.blogservice.exceptions.UnauthorizedException;
 import com.asuni.blogservice.repository.CommentRepository;
 import com.asuni.blogservice.repository.PostRepository;
 
@@ -30,7 +29,7 @@ public class CommentServiceImpl implements CommentService {
         Comment comment = Comment.builder()
                 .post(post)
                 .userId(userId)
-                .commentText(request.getCommentText())
+                .commentText(request.getComment_text())
                 .build();
 
         commentRepository.save(comment);

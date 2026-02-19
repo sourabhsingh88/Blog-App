@@ -24,4 +24,8 @@ public class CreatePostRequest {
 
     @NotNull
     private Priority priority;
+
+    @NotNull
+    private Boolean hideUsername;
+
 }

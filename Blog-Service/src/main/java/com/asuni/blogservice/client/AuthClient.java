@@ -25,4 +25,6 @@ public interface AuthClient {
             @RequestParam int size,
             @RequestParam String sortBy
     );
+    @GetMapping("/internal/users/{userId}/username")
+    String getUsernameByUserId(@PathVariable Long userId);
 }

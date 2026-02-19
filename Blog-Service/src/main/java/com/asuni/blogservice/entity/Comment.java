@@ -23,7 +23,6 @@ public class Comment {
     @Column(nullable = false)
     private Long userId;
 
-
     @Column(columnDefinition = "TEXT", nullable = false)
     private String commentText;
 

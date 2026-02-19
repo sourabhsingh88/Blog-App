@@ -12,5 +12,5 @@ import lombok.*;
 public class CommentRequest {
 
     @NotBlank
-    private String commentText;
+    private String comment_text;
 }

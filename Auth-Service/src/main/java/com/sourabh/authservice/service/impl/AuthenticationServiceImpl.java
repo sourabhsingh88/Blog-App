@@ -56,12 +56,12 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
                 .id(user.getId())
-                .userName(user.getUsername())
+                .user_name(user.getUsername())
                 .email(user.getEmail())
-                .fullName(user.getFullName())
-                .phoneNumber(user.getPhoneNumber())
+                .full_name(user.getFullName())
+                .phone_number(user.getPhoneNumber())
                 .gender(user.getGender())
-                .dateOfBirth(user.getDateOfBirth())
+                .date_of_birth(user.getDateOfBirth())
                 .build();
     }
 
@@ -102,12 +102,12 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .accessToken(newAccessToken)
                 .refreshToken(newRefreshToken)
                 .id(user.getId())
-                .userName(user.getUsername())
+                .user_name(user.getUsername())
                 .email(user.getEmail())
-                .fullName(user.getFullName())
-                .phoneNumber(user.getPhoneNumber())
+                .full_name(user.getFullName())
+                .phone_number(user.getPhoneNumber())
                 .gender(user.getGender())
-                .dateOfBirth(user.getDateOfBirth())
+                .date_of_birth(user.getDateOfBirth())
                 .build();
     }
 

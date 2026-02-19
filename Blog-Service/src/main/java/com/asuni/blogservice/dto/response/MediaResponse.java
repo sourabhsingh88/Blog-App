@@ -12,8 +12,8 @@ public class MediaResponse {
 
 
         private Long id;
-        private String mediaUrl;
-        private MediaType mediaType;
+        private String media_url;
+        private MediaType media_type;
     }
 
 

@@ -39,6 +39,11 @@ public class Post {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
+    @Column(name = "is_username_hidden", nullable = false)
+    private boolean isUsernameHidden;
+
+
+
     /* Relationships */
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
