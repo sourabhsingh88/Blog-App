@@ -3,6 +3,7 @@ package com.asuni.blogservice.controller;
 import com.asuni.blogservice.dto.request.CommentRequest;
 import com.asuni.blogservice.dto.request.CreatePostRequest;
 import com.asuni.blogservice.dto.request.UpdatePostRequest;
+import com.asuni.blogservice.dto.response.CommentResponse;
 import com.asuni.blogservice.dto.response.PostResponse;
 import com.asuni.blogservice.exceptions.UnauthorizedException;
 import com.asuni.blogservice.service.contract.*;
@@ -28,7 +29,7 @@ public class BlogController {
     private final CommentService commentService;
     private final MediaService mediaService;
     private final TruePostService truePostService;
-
+ private final  CommentLikeService commentLikeService ;
     /* ===================== AUTH UTILS ===================== */
 
     private Long getUserId(Authentication authentication) {
@@ -254,4 +255,34 @@ public class BlogController {
                 postService.getCommentedPostsByUser(userId)
         );
     }
+
+//    ================= Commnets ============
+    @PostMapping("/comments/{commentId}/like")
+    public ResponseEntity<Void> likeComment(
+            @PathVariable Long commentId,
+            Authentication authentication
+    ) {
+        Long userId = getUserId(authentication);
+        commentLikeService.likeComment(commentId, userId);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+
+    @DeleteMapping("/comments/{commentId}/like")
+    public ResponseEntity<Void> unlikeComment(
+            @PathVariable Long commentId,
+            Authentication authentication
+    ) {
+        Long userId = getUserId(authentication);
+        commentLikeService.unlikeComment(commentId, userId);
+        return ResponseEntity.noContent().build();
+    }
+    @GetMapping("/{postId}/comments")
+    public ResponseEntity<List<CommentResponse>> getComments(
+            @PathVariable Long postId
+    ) {
+        return ResponseEntity.ok(
+                commentService.getCommentsByPostId(postId)
+        );
+    }
+
 }
