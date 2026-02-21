@@ -32,6 +32,13 @@ public class Comment {
     @JoinColumn(name = "post_id", nullable = false)
     private Post post;
 
+    @OneToMany(
+            mappedBy = "comment",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    private java.util.List<CommentLike> likes;
+
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();

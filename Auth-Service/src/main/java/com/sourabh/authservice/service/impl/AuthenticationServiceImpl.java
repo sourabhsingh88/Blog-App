@@ -62,6 +62,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .phone_number(user.getPhoneNumber())
                 .gender(user.getGender())
                 .date_of_birth(user.getDateOfBirth())
+                .preferred_language(user.getPreferredLanguage())
+                .profile_picture_url(user.getProfilePictureUrl())
                 .build();
     }
 

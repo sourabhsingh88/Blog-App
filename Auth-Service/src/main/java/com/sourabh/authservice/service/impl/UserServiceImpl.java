@@ -52,5 +52,10 @@ public class UserServiceImpl implements UserService {
                 .map(User::getUsername)
                 .toList();
     }
-
+    @Override
+    public String getUsernameByUserId(Long id) {
+        return userRepository.findById(id)
+                .map(User::getUsername)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+    }
 }

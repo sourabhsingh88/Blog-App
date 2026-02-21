@@ -6,5 +6,5 @@ public interface UserService {
 
     Long getUserIdByUsername(String username);
     List<String> searchUsernames(String keyword, int page, int size, String sortBy);
-
+    String getUsernameByUserId(Long id);
 }
