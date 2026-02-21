@@ -9,7 +9,7 @@ spring.datasource.username=username
 spring.datasource.password=password
 spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
 
-spring.jpa.hibernate.ddl-auto=create
+spring.jpa.hibernate.ddl-auto=update
 spring.jpa.show-sql=true
 spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQLDialect
 
@@ -17,10 +17,10 @@ jwt.secret=sgdhfcysgfbludgfujdfgf-dfgfghdfjgsduff*
 jwt.expiry.minutes=60
 jwt.otp.expiry.minutes=5
 
-aws.access-key=YOUR_ACCESS_KEY
-aws.secret-key=YOUR_SECRET_KEY
-aws.region=ap-south-1
-aws.s3.bucket=your-bucket-name
+aws.access-key=key
+aws.secret-key=key
+aws.region=region
+aws.s3.bucket=bucket name
 
 
 spring.jpa.open-in-view=false
@@ -28,7 +28,7 @@ spring.jpa.properties.hibernate.format_sql=true
 
 spring.mail.host=smtp.gmail.com
 spring.mail.port=587
-spring.mail.username=username
+spring.mail.username=Username
 spring.mail.password=password
 spring.mail.properties.mail.smtp.auth=true
 spring.mail.properties.mail.smtp.starttls.enable=true
