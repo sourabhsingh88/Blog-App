@@ -9,9 +9,11 @@
         <outputRelativeToContentRoot value="true" />
         <module name="Blog-Service" />
         <module name="blog-service" />
-        <module name="auth" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="auth" target="21" />
+    </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">

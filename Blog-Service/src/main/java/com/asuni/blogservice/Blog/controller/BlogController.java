@@ -1,12 +1,12 @@
-package com.asuni.blogservice.controller;
+package com.asuni.blogservice.Blog.controller;
 
-import com.asuni.blogservice.dto.request.CommentRequest;
-import com.asuni.blogservice.dto.request.CreatePostRequest;
-import com.asuni.blogservice.dto.request.UpdatePostRequest;
-import com.asuni.blogservice.dto.response.CommentResponse;
-import com.asuni.blogservice.dto.response.PostResponse;
+import com.asuni.blogservice.Blog.dto.request.CommentRequest;
+import com.asuni.blogservice.Blog.dto.request.CreatePostRequest;
+import com.asuni.blogservice.Blog.dto.request.UpdatePostRequest;
+import com.asuni.blogservice.Blog.dto.response.CommentResponse;
+import com.asuni.blogservice.Blog.dto.response.PostResponse;
+import com.asuni.blogservice.Blog.service.contract.*;
 import com.asuni.blogservice.exceptions.UnauthorizedException;
-import com.asuni.blogservice.service.contract.*;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -29,7 +29,7 @@ public class BlogController {
     private final CommentService commentService;
     private final MediaService mediaService;
     private final TruePostService truePostService;
- private final  CommentLikeService commentLikeService ;
+ private final CommentLikeService commentLikeService ;
     /* ===================== AUTH UTILS ===================== */
 
     private Long getUserId(Authentication authentication) {

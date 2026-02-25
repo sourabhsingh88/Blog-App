@@ -1,4 +1,4 @@
-package com.asuni.blogservice.dto.request;
+package com.asuni.blogservice.Blog.dto.request;
 
 
 import jakarta.validation.constraints.NotBlank;

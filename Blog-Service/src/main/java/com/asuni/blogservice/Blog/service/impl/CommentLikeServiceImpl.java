@@ -1,11 +1,11 @@
-package com.asuni.blogservice.service.impl;
+package com.asuni.blogservice.Blog.service.impl;
 
-import com.asuni.blogservice.entity.Comment;
-import com.asuni.blogservice.entity.CommentLike;
+import com.asuni.blogservice.Blog.entity.Comment;
+import com.asuni.blogservice.Blog.entity.CommentLike;
 import com.asuni.blogservice.exceptions.NotFoundException;
-import com.asuni.blogservice.repository.CommentLikeRepository;
-import com.asuni.blogservice.repository.CommentRepository;
-import com.asuni.blogservice.service.contract.CommentLikeService;
+import com.asuni.blogservice.Blog.repository.CommentLikeRepository;
+import com.asuni.blogservice.Blog.repository.CommentRepository;
+import com.asuni.blogservice.Blog.service.contract.CommentLikeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

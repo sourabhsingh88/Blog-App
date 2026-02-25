@@ -1,17 +1,18 @@
-package com.asuni.blogservice.service.impl;
+package com.asuni.blogservice.Blog.service.impl;
 
 
-import com.asuni.blogservice.client.AuthClient;
-import com.asuni.blogservice.dto.request.CommentRequest;
-import com.asuni.blogservice.dto.response.CommentResponse;
-import com.asuni.blogservice.entity.Comment;
-import com.asuni.blogservice.entity.Post;
+
+import com.asuni.blogservice.Auth.repository.UserRepository;
+import com.asuni.blogservice.Blog.dto.request.CommentRequest;
+import com.asuni.blogservice.Blog.dto.response.CommentResponse;
+import com.asuni.blogservice.Blog.entity.Comment;
+import com.asuni.blogservice.Blog.entity.Post;
 import com.asuni.blogservice.exceptions.NotFoundException;
-import com.asuni.blogservice.repository.CommentLikeRepository;
-import com.asuni.blogservice.repository.CommentRepository;
-import com.asuni.blogservice.repository.PostRepository;
+import com.asuni.blogservice.Blog.repository.CommentLikeRepository;
+import com.asuni.blogservice.Blog.repository.CommentRepository;
+import com.asuni.blogservice.Blog.repository.PostRepository;
 
-import com.asuni.blogservice.service.contract.CommentService;
+import com.asuni.blogservice.Blog.service.contract.CommentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,7 +26,7 @@ public class CommentServiceImpl implements CommentService {
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
     private final CommentLikeRepository commentLikeRepository;
-    private final AuthClient authClient;
+    private final UserRepository userRepository;
 
     @Override
     public void addComment(Long postId, Long userId, CommentRequest request) {
@@ -65,8 +66,9 @@ public class CommentServiceImpl implements CommentService {
                     long likeCount =
                             commentLikeRepository.countByCommentId(comment.getId()); // 🔥 STEP 3
 
-                    String username =
-                            authClient.getUsernameByUserId(comment.getUserId());
+                    String username = userRepository.findById(comment.getUserId())
+                            .map(user -> user.getUsername())
+                            .orElse("Unknown");
 
                     return CommentResponse.builder()
                             .id(comment.getId())

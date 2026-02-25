@@ -1,18 +1,20 @@
-package com.asuni.blogservice.service.impl;
+package com.asuni.blogservice.Blog.service.impl;
 
-import com.asuni.blogservice.client.AuthClient;
-import com.asuni.blogservice.dto.request.CreatePostRequest;
-import com.asuni.blogservice.dto.request.UpdatePostRequest;
-import com.asuni.blogservice.dto.response.MediaResponse;
-import com.asuni.blogservice.dto.response.PostResponse;
-import com.asuni.blogservice.entity.Post;
+
+import com.asuni.blogservice.Auth.repository.UserRepository;
+import com.asuni.blogservice.Blog.dto.request.CreatePostRequest;
+import com.asuni.blogservice.Blog.dto.request.UpdatePostRequest;
+import com.asuni.blogservice.Blog.dto.response.MediaResponse;
+import com.asuni.blogservice.Blog.dto.response.PostResponse;
+import com.asuni.blogservice.Blog.entity.Post;
 import com.asuni.blogservice.exceptions.NotFoundException;
 import com.asuni.blogservice.exceptions.UnauthorizedException;
-import com.asuni.blogservice.repository.MediaRepository;
-import com.asuni.blogservice.repository.PostRepository;
-import com.asuni.blogservice.repository.TruePostRepository;
-import com.asuni.blogservice.service.contract.MediaService;
-import com.asuni.blogservice.service.contract.PostService;
+import com.asuni.blogservice.Blog.repository.MediaRepository;
+import com.asuni.blogservice.Blog.repository.PostRepository;
+import com.asuni.blogservice.Blog.repository.TruePostRepository;
+import com.asuni.blogservice.Blog.service.contract.MediaService;
+import com.asuni.blogservice.Blog.service.contract.PostService;
+import com.asuni.blogservice.exceptions.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,7 +30,8 @@ public class PostServiceImpl implements PostService {
     private final TruePostRepository truePostRepository;
     private final MediaRepository mediaRepository;
     private final MediaService mediaService;
-    private final AuthClient authClient;
+    private final UserRepository userRepository;
+
 
     /* ===================== CREATE ===================== */
 
@@ -161,17 +164,13 @@ public class PostServiceImpl implements PostService {
     @Transactional(readOnly = true)
     public List<PostResponse> searchByUsername(String username, Long currentUserId) {
 
-        List<String> usernames = authClient.searchUsers(
-                username, 0, 20, "username"
-        );
-
-        return usernames.stream()
-                .flatMap(name -> {
-                    Long userId = authClient.getUserIdByUsername(name);
-                    return postRepository
-                            .findByUserIdAndUsernameVisible(userId) // 🔥 ONLY CHANGE
-                            .stream();
-                })
+        return userRepository.findByUsernameContainingIgnoreCase(username)
+                .stream()
+                .flatMap(user ->
+                        postRepository
+                                .findByUserIdAndUsernameVisible(user.getId())
+                                .stream()
+                )
                 .map(this::mapToResponse)
                 .toList();
     }
@@ -218,7 +217,9 @@ public class PostServiceImpl implements PostService {
 
     private PostResponse mapToResponse(Post post) {
 
-        String username = authClient.getUsernameByUserId(post.getUserId());
+        String username = userRepository.findById(post.getUserId())
+                .map(user -> user.getUsername())
+                .orElse("Unknown");
 
         // 🔥 ONLY MASK NAME, POST IS STILL PUBLIC
         if (post.isUsernameHidden()) {

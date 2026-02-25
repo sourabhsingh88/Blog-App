@@ -1,11 +1,9 @@
-package com.asuni.blogservice.entity;
+package com.asuni.blogservice.Blog.entity;
 
 
-import com.asuni.blogservice.enums.MediaType;
+import com.asuni.blogservice.Blog.enums.MediaType;
 import jakarta.persistence.*;
 import lombok.*;
-
-import java.util.UUID;
 
 @Entity
 @Table(name = "media")

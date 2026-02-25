@@ -1,5 +1,5 @@
-package com.asuni.blogservice.dto.response ;
-import com.asuni.blogservice.enums.Priority;
+package com.asuni.blogservice.Blog.dto.response;
+import com.asuni.blogservice.Blog.enums.Priority;
 import lombok.*;
 
 import java.time.LocalDateTime;

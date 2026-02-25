@@ -1,6 +1,6 @@
-package com.asuni.blogservice.entity;
+package com.asuni.blogservice.Blog.entity;
 
-import com.asuni.blogservice.enums.Priority;
+import com.asuni.blogservice.Blog.enums.Priority;
 import jakarta.persistence.*;
 import lombok.*;
 

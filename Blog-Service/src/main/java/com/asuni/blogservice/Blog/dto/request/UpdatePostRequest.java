@@ -1,8 +1,8 @@
-package com.asuni.blogservice.dto.request;
+package com.asuni.blogservice.Blog.dto.request;
 
 
 
-import com.asuni.blogservice.enums.Priority;
+import com.asuni.blogservice.Blog.enums.Priority;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.springframework.web.multipart.MultipartFile;

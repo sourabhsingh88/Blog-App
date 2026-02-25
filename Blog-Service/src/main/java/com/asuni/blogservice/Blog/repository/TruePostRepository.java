@@ -1,8 +1,8 @@
-package com.asuni.blogservice.repository;
+package com.asuni.blogservice.Blog.repository;
 
 
-import com.asuni.blogservice.entity.Post;
-import com.asuni.blogservice.entity.TruePost;
+import com.asuni.blogservice.Blog.entity.Post;
+import com.asuni.blogservice.Blog.entity.TruePost;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 

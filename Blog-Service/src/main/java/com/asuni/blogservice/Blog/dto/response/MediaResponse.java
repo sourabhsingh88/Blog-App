@@ -1,6 +1,6 @@
-package com.asuni.blogservice.dto.response;
+package com.asuni.blogservice.Blog.dto.response;
 
-import com.asuni.blogservice.enums.MediaType;
+import com.asuni.blogservice.Blog.enums.MediaType;
 import lombok.*;
 
 @Getter

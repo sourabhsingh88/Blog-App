@@ -1,8 +1,8 @@
-package com.asuni.blogservice.service.contract;
+package com.asuni.blogservice.Blog.service.contract;
 
 
-import com.asuni.blogservice.dto.request.CommentRequest;
-import com.asuni.blogservice.dto.response.CommentResponse;
+import com.asuni.blogservice.Blog.dto.request.CommentRequest;
+import com.asuni.blogservice.Blog.dto.response.CommentResponse;
 
 import java.util.List;
 

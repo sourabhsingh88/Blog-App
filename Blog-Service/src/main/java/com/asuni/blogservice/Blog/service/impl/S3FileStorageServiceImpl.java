@@ -1,6 +1,6 @@
-package com.asuni.blogservice.service.impl;
+package com.asuni.blogservice.Blog.service.impl;
 
-import com.asuni.blogservice.service.contract.S3FileStorageService;
+import com.asuni.blogservice.Blog.service.contract.S3FileStorageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;

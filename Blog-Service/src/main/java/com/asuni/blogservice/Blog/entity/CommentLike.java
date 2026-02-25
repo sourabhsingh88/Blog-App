@@ -1,4 +1,4 @@
-package com.asuni.blogservice.entity;
+package com.asuni.blogservice.Blog.entity;
 
 import jakarta.persistence.*;
 import lombok.*;

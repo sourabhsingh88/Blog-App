@@ -1,4 +1,4 @@
-package com.asuni.blogservice.dto.response;
+package com.asuni.blogservice.Blog.dto.response;
 
 import lombok.*;
 

@@ -1,18 +1,16 @@
-package com.asuni.blogservice.service.impl ;
+package com.asuni.blogservice.Blog.service.impl;
 
-import com.asuni.blogservice.entity.Media;
-import com.asuni.blogservice.entity.Post;
-import com.asuni.blogservice.enums.MediaType;
+import com.asuni.blogservice.Blog.entity.Media;
+import com.asuni.blogservice.Blog.entity.Post;
+import com.asuni.blogservice.Blog.enums.MediaType;
 import com.asuni.blogservice.exceptions.NotFoundException;
-import com.asuni.blogservice.repository.MediaRepository;
-import com.asuni.blogservice.repository.PostRepository;
-import com.asuni.blogservice.service.contract.MediaService;
-import com.asuni.blogservice.service.contract.S3FileStorageService;
+import com.asuni.blogservice.Blog.repository.MediaRepository;
+import com.asuni.blogservice.Blog.repository.PostRepository;
+import com.asuni.blogservice.Blog.service.contract.MediaService;
+import com.asuni.blogservice.Blog.service.contract.S3FileStorageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.util.Map;
 
 @Service
 @RequiredArgsConstructor

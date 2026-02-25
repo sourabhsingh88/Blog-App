@@ -1,8 +1,8 @@
-package com.asuni.blogservice.service.contract;
+package com.asuni.blogservice.Blog.service.contract;
 
-import com.asuni.blogservice.dto.request.CreatePostRequest;
-import com.asuni.blogservice.dto.request.UpdatePostRequest;
-import com.asuni.blogservice.dto.response.PostResponse;
+import com.asuni.blogservice.Blog.dto.request.CreatePostRequest;
+import com.asuni.blogservice.Blog.dto.request.UpdatePostRequest;
+import com.asuni.blogservice.Blog.dto.response.PostResponse;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;

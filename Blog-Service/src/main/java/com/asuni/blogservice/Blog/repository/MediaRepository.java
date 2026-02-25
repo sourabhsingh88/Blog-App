@@ -1,6 +1,6 @@
-package com.asuni.blogservice.repository;
+package com.asuni.blogservice.Blog.repository;
 
-import com.asuni.blogservice.entity.Media;
+import com.asuni.blogservice.Blog.entity.Media;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

@@ -1,4 +1,4 @@
-package com.asuni.blogservice.enums;
+package com.asuni.blogservice.Blog.enums;
 
 
 public enum Priority {

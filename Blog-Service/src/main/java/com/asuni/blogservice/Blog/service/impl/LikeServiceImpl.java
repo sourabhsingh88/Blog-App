@@ -1,12 +1,13 @@
-package com.asuni.blogservice.service.impl;
+package com.asuni.blogservice.Blog.service.impl;
 
 
-import com.asuni.blogservice.entity.Like;
-import com.asuni.blogservice.entity.Post;
+import com.asuni.blogservice.Blog.entity.Like;
+import com.asuni.blogservice.Blog.entity.Post;
+import com.asuni.blogservice.Blog.repository.LikeRepository;
+import com.asuni.blogservice.Blog.repository.PostRepository;
+import com.asuni.blogservice.Blog.service.contract.LikeService;
 import com.asuni.blogservice.exceptions.NotFoundException;
-import com.asuni.blogservice.repository.LikeRepository;
-import com.asuni.blogservice.repository.PostRepository;
-import com.asuni.blogservice.service.contract.LikeService;
+import  com.asuni.blogservice.exceptions.NotFoundException ;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

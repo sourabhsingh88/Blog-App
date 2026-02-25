@@ -1,11 +1,12 @@
-package com.asuni.blogservice.service.impl;
+package com.asuni.blogservice.Blog.service.impl;
 
-import com.asuni.blogservice.entity.Post;
-import com.asuni.blogservice.entity.TruePost;
+import com.asuni.blogservice.Auth.repository.UserRepository;
+import com.asuni.blogservice.Blog.entity.Post;
+import com.asuni.blogservice.Blog.entity.TruePost;
 import com.asuni.blogservice.exceptions.NotFoundException;
-import com.asuni.blogservice.repository.PostRepository;
-import com.asuni.blogservice.repository.TruePostRepository;
-import com.asuni.blogservice.service.contract.TruePostService;
+import com.asuni.blogservice.Blog.repository.PostRepository;
+import com.asuni.blogservice.Blog.repository.TruePostRepository;
+import com.asuni.blogservice.Blog.service.contract.TruePostService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,7 +17,7 @@ public class TruePostServiceImpl implements TruePostService {
 
     private final PostRepository postRepository;
     private final TruePostRepository postTrueRepository;
-
+    private final UserRepository userRepository;
     @Override
     public void markAsTrue(Long postId, Long userId) {
 

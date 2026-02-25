@@ -1,4 +1,4 @@
-package com.asuni.blogservice.service.contract;
+package com.asuni.blogservice.Blog.service.contract;
 
 
 import org.springframework.web.multipart.MultipartFile;
