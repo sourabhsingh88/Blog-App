@@ -1,4 +1,4 @@
-package com.asuni.blogservice.config;
+package com.asuni.blogservice.Blog.config;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
