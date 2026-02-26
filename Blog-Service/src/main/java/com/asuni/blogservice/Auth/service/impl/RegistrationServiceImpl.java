@@ -2,6 +2,7 @@ package com.asuni.blogservice.Auth.service.impl;
 
 
 import com.asuni.blogservice.Auth.dto.request.SignupRequest;
+import com.asuni.blogservice.Auth.dto.response.SignupResponse;
 import com.asuni.blogservice.Auth.entity.User;
 import com.asuni.blogservice.Auth.enums.OtpType;
 import com.asuni.blogservice.Auth.repository.UserRepository;
@@ -29,9 +30,9 @@ public class RegistrationServiceImpl implements RegistrationService {
 
     @Override
     @Transactional
-    public String signup(SignupRequest request,
-                         MultipartFile aadhaarImage,
-                         MultipartFile profilePicture) {
+    public SignupResponse signup(SignupRequest request,
+                                 MultipartFile aadhaarImage,
+                                 MultipartFile profilePicture) {
 
         if (!request.getPassword().equals(request.getConfirm_password())) {
             throw new BadRequestException("Passwords do not match");
@@ -86,13 +87,20 @@ public class RegistrationServiceImpl implements RegistrationService {
         userRepository.save(user);
 
         otpService.generateEmailOtp(user.getEmail(), OtpType.EMAIL_VERIFICATION);
-        otpService.generatePhoneOtp(user.getPhoneNumber(), OtpType.PHONE_VERIFICATION);
 
-        return jwtUtil.generateOtpToken(
+        String phoneOtp =
+                otpService.generatePhoneOtp(user.getPhoneNumber(), OtpType.PHONE_VERIFICATION);
+
+        String verificationToken = jwtUtil.generateOtpToken(
                 user.getEmail(),
                 user.getPhoneNumber(),
                 "BOTH_VERIFICATION"
         );
+
+        return SignupResponse.builder()
+                .verificationToken(verificationToken)
+                .phoneOtp(phoneOtp)
+                .build();
     }
 
 //    @Override

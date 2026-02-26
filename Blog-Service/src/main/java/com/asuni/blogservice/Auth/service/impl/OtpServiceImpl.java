@@ -33,11 +33,11 @@ public class OtpServiceImpl implements OtpService {
     }
 
     @Override
-    public void generatePhoneOtp(String phone, OtpType type) {
-        createOtp(null, phone, type);
+    public String generatePhoneOtp(String phone, OtpType type) {
+        return createOtp(null, phone, type);
     }
 
-    private void createOtp(String email, String phone, OtpType type) {
+    private String createOtp(String email, String phone, OtpType type) {
 
         LocalDateTime now = LocalDateTime.now();
 
@@ -54,7 +54,6 @@ public class OtpServiceImpl implements OtpService {
                     .findValidPhoneOtp(phone, type, now)
                     .orElse(null);
         }
-
 
         if (lastOtp != null &&
                 lastOtp.getCreatedAt().isAfter(now.minusSeconds(RESEND_COOLDOWN_SECONDS))) {
@@ -75,13 +74,18 @@ public class OtpServiceImpl implements OtpService {
 
         otpRepository.save(otp);
 
+        // Email → send only
         if (email != null) {
             emailService.sendOtp(email, rawOtp);
+            return null;
         }
 
+        // Phone → return OTP
         if (phone != null) {
-            System.out.println("[DEV] Phone OTP for " + phone + " = " + rawOtp);
+            return rawOtp;
         }
+
+        return null;
     }
 
     /* ===================== VERIFY ===================== */
@@ -100,7 +104,6 @@ public class OtpServiceImpl implements OtpService {
         Otp entity = otpRepository
                 .findValidPhoneOtp(phone, type, LocalDateTime.now())
                 .orElseThrow(() -> new BadRequestException("OTP expired or invalid"));
-
         validateOtp(entity, otp);
     }
 

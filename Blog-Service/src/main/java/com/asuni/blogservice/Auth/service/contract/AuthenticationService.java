@@ -5,6 +5,7 @@ import com.asuni.blogservice.Auth.dto.request.LoginRequest;
 import com.asuni.blogservice.Auth.dto.request.RefreshTokenRequest;
 import com.asuni.blogservice.Auth.dto.request.VerifyPhoneOtpRequest;
 import com.asuni.blogservice.Auth.dto.response.LoginResponse;
+import com.asuni.blogservice.Auth.dto.response.PhoneLoginResponse;
 
 public interface AuthenticationService {
 
@@ -13,12 +14,12 @@ public interface AuthenticationService {
     /**
      * Generates OTP and returns phone_login_token
      */
-    String sendPhoneLoginOtp(LoginPhoneRequest request);
+    PhoneLoginResponse sendPhoneLoginOtp(LoginPhoneRequest request);
 
     /**
      * Verifies OTP and returns AUTH token
      */
-    String verifyPhoneLoginOtp(VerifyPhoneOtpRequest request);
+    LoginResponse  verifyPhoneLoginOtp(VerifyPhoneOtpRequest request);
 
     LoginResponse refreshToken(RefreshTokenRequest request);
 

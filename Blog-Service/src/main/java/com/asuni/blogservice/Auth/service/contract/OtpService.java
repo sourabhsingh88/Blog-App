@@ -6,7 +6,7 @@ public interface OtpService {
 
     void generateEmailOtp(String email, OtpType type);
 
-    void generatePhoneOtp(String phone, OtpType type);
+    String generatePhoneOtp(String phone, OtpType type);
 
     void verifyEmailOtp(String email, String otp, OtpType type);
 

@@ -15,10 +15,6 @@ public class UpdateUserRequest {
 
     private String preferred_language;
 
-    private MultipartFile aadhaar_image;
-    private MultipartFile profile_picture;
-
-    // sensitive
     private String email;
     private String phone_number;
 }

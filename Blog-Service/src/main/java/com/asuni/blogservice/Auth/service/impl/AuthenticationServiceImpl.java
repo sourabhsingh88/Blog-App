@@ -5,6 +5,7 @@ import com.asuni.blogservice.Auth.dto.request.LoginRequest;
 import com.asuni.blogservice.Auth.dto.request.RefreshTokenRequest;
 import com.asuni.blogservice.Auth.dto.request.VerifyPhoneOtpRequest;
 import com.asuni.blogservice.Auth.dto.response.LoginResponse;
+import com.asuni.blogservice.Auth.dto.response.PhoneLoginResponse;
 import com.asuni.blogservice.Auth.entity.User;
 import com.asuni.blogservice.Auth.enums.OtpType;
 import com.asuni.blogservice.Auth.repository.UserRepository;
@@ -119,7 +120,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     /* ================= PHONE LOGIN ================= */
 
     @Override
-    public String sendPhoneLoginOtp(LoginPhoneRequest request) {
+    public PhoneLoginResponse sendPhoneLoginOtp(LoginPhoneRequest request) {
 
         User user = userRepository.findByPhoneNumber(request.getPhone_number())
                 .orElseThrow(() -> new NotFoundException("User not found"));
@@ -128,20 +129,25 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             throw new BadRequestException("Account not verified");
         }
 
-        otpService.generatePhoneOtp(
+        String phoneOtp = otpService.generatePhoneOtp(
                 user.getPhoneNumber(),
                 OtpType.PHONE_LOGIN
         );
 
-        return jwtUtil.generateOtpToken(
+        String phoneLoginToken = jwtUtil.generateOtpToken(
                 user.getEmail(),
                 user.getPhoneNumber(),
                 "PHONE_LOGIN"
         );
+
+        return PhoneLoginResponse.builder()
+                .phoneLoginToken(phoneLoginToken)
+                .phoneOtp(phoneOtp)
+                .build();
     }
 
     @Override
-    public String verifyPhoneLoginOtp(VerifyPhoneOtpRequest request) {
+    public LoginResponse verifyPhoneLoginOtp(VerifyPhoneOtpRequest request) {
 
         var claims = jwtUtil.validateAndExtract(request.getPhone_login_token());
 
@@ -162,8 +168,28 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         User user = userRepository.findByPhoneNumber(phone)
                 .orElseThrow(() -> new NotFoundException("User not found"));
 
-        return jwtUtil.generateAuthToken(user.getId(), user.getEmail());
+        // Generate tokens
+        String accessToken = jwtUtil.generateAccessToken(user.getId(), user.getEmail());
+        String refreshToken = jwtUtil.generateRefreshToken(user.getId());
 
+        // Store refresh token
+        user.setRefreshToken(refreshToken);
+        user.setRefreshTokenExpiry(LocalDateTime.now().plusDays(7));
+        userRepository.save(user);
+
+        return LoginResponse.builder()
+                .access_token(accessToken)
+                .refresh_token(refreshToken)
+                .id(user.getId())
+                .user_name(user.getUsername())
+                .email(user.getEmail())
+                .full_name(user.getFullName())
+                .phone_number(user.getPhoneNumber())
+                .gender(user.getGender())
+                .date_of_birth(user.getDateOfBirth())
+                .preferred_language(user.getPreferredLanguage())
+                .profile_picture_url(user.getProfilePictureUrl())
+                .build();
     }
 
     /* ================= INTERNAL ================= */

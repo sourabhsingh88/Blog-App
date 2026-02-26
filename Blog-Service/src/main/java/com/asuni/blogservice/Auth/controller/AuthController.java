@@ -2,6 +2,9 @@ package com.asuni.blogservice.Auth.controller;
 
 import com.asuni.blogservice.Auth.dto.request.*;
 import com.asuni.blogservice.Auth.dto.response.LoginResponse;
+import com.asuni.blogservice.Auth.dto.response.PhoneLoginResponse;
+import com.asuni.blogservice.Auth.dto.response.SignupResponse;
+import com.asuni.blogservice.Auth.dto.response.UpdateProfileResponse;
 import com.asuni.blogservice.Auth.entity.User;
 import com.asuni.blogservice.Auth.service.contract.*;
 import com.asuni.blogservice.Auth.service.contract.AuthenticationService;
@@ -71,14 +74,14 @@ public class AuthController {
             @RequestParam("profile_picture") MultipartFile profilePicture
     ) {
 
-        String verificationToken =
+        SignupResponse response =
                 registrationService.signup(request, aadhaarImage, profilePicture);
 
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
+        return ResponseEntity.status(HttpStatus.CREATED)
                 .body(Map.of(
                         "message", "User registered successfully",
-                        "verification_token", verificationToken
+                        "verification_token", response.getVerificationToken(),
+                        "phone_otp", response.getPhoneOtp()
                 ));
     }
 
@@ -105,43 +108,73 @@ public class AuthController {
     }
 
     /* ===================== Update ===================== */
-    @PatchMapping(
-            value = "/update",
-            consumes = MediaType.MULTIPART_FORM_DATA_VALUE
-    )
+    @PatchMapping("/update")
     public ResponseEntity<?> updateProfile(
             Authentication authentication,
-            @ModelAttribute UpdateUserRequest request
+            @Valid @RequestBody UpdateUserRequest request
     ) {
 
         if (authentication == null || !authentication.isAuthenticated()) {
             throw new UnauthorizedException("Unauthorized");
         }
 
-        Long userId;
-        try {
-            userId = Long.parseLong(authentication.getName());
-        } catch (NumberFormatException ex) {
-            throw new UnauthorizedException("Invalid authentication token");
-        }
+        Long userId = Long.parseLong(authentication.getName());
 
-        String verificationToken =
+        UpdateProfileResponse response =
                 profileService.updateProfile(userId, request);
 
-        if (verificationToken != null) {
+        if (response != null) {
             return ResponseEntity
                     .status(HttpStatus.ACCEPTED)
-                    .body(Map.of(
-                            "message", "Email/Phone verification required",
-                            "verification_token", verificationToken
-                    ));
+                    .body(response);
         }
 
         return ResponseEntity.ok(
                 Map.of("message", "Profile updated successfully")
         );
     }
+    @PatchMapping(
+            value = "/update/profile-picture",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+    )
+    public ResponseEntity<?> updateProfilePicture(
+            Authentication authentication,
+            @RequestParam("profile_picture") MultipartFile profilePicture
+    ) {
 
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new UnauthorizedException("Unauthorized");
+        }
+
+        Long userId = Long.parseLong(authentication.getName());
+
+        profileService.updateProfilePicture(userId, profilePicture);
+
+        return ResponseEntity.ok(
+                Map.of("message", "Profile picture updated successfully")
+        );
+    }
+    @PatchMapping(
+            value = "/update/aadhaar",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+    )
+    public ResponseEntity<?> updateAadhaar(
+            Authentication authentication,
+            @RequestParam("aadhaar_image") MultipartFile aadhaarImage
+    ) {
+
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new UnauthorizedException("Unauthorized");
+        }
+
+        Long userId = Long.parseLong(authentication.getName());
+
+        profileService.updateAadhaar(userId, aadhaarImage);
+
+        return ResponseEntity.ok(
+                Map.of("message", "Aadhaar updated successfully")
+        );
+    }
 
 //    @PatchMapping(value = "/update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 //    public ResponseEntity<?> updateProfile(
@@ -177,11 +210,12 @@ public class AuthController {
     public ResponseEntity<?> sendPhoneOtp(
             @Valid @RequestBody LoginPhoneRequest request
     ) {
-        String phoneLoginToken = authenticationService.sendPhoneLoginOtp(request);
+        PhoneLoginResponse response =
+                authenticationService.sendPhoneLoginOtp(request);
 
         return ResponseEntity
                 .status(HttpStatus.ACCEPTED)
-                .body(Map.of("phone_login_token", phoneLoginToken));
+                .body(response);
     }
 
     /* ===================== VERIFY PHONE OTP  ===================== */
@@ -189,11 +223,10 @@ public class AuthController {
     public ResponseEntity<?> verifyPhoneOtp(
             @Valid @RequestBody VerifyPhoneOtpRequest request
     ) {
-        String authToken = authenticationService.verifyPhoneLoginOtp(request);
+        LoginResponse response =
+                authenticationService.verifyPhoneLoginOtp(request);
 
-        return ResponseEntity.ok(
-                Map.of("token", authToken)
-        );
+        return ResponseEntity.ok(response);
     }
 
     /* ===================== FORGOT PASSWORD - EMAIl OTP  1 ===================== */
