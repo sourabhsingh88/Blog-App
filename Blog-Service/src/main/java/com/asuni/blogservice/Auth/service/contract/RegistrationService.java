@@ -6,9 +6,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 public interface RegistrationService {
 
-    /**
-     * Registers user and returns verification token
-     */
+
     SignupResponse signup(SignupRequest request,
                           MultipartFile aadhaarImage,
                           MultipartFile profilePicture);

@@ -38,30 +38,7 @@ public class AuthController {
     private final PasswordService passwordService;
 
 
-
-
-    /* ===================== Signup ===================== */
-
-//    @Operation(summary = "User Signup")
-//    @PostMapping(
-//            value = "/signup",
-//            consumes = MediaType.MULTIPART_FORM_DATA_VALUE
-//    )
-//    public ResponseEntity<?> signup(
-//            @ParameterObject @ModelAttribute SignupRequest request,
-//            @RequestParam("aadharImage") MultipartFile aadharImage
-//    ) {
-//
-//        String verification_token =
-//                registrationService.signup(request, aadharImage);
-//
-//        return ResponseEntity
-//                .status(HttpStatus.CREATED)
-//                .body(Map.of(
-//                        "message", "User registered successfully",
-//                        "verification_token", verification_token
-//                ));
-//    }
+    /* ===================== SIGNUP ===================== */
 
     @Operation(summary = "User Signup")
     @PostMapping(
@@ -154,6 +131,22 @@ public class AuthController {
                 Map.of("message", "Profile picture updated successfully")
         );
     }
+    @DeleteMapping("/update/profile-picture")
+    public ResponseEntity<?> removeProfilePicture(Authentication authentication) {
+
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new UnauthorizedException("Unauthorized");
+        }
+
+        Long userId = Long.parseLong(authentication.getName());
+
+        profileService.removeProfilePicture(userId);
+
+        return ResponseEntity.ok(
+                Map.of("message", "Profile picture removed successfully")
+        );
+    }
+
     @PatchMapping(
             value = "/update/aadhaar",
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE
@@ -175,34 +168,23 @@ public class AuthController {
                 Map.of("message", "Aadhaar updated successfully")
         );
     }
+    @DeleteMapping("/update/aadhaar")
+    public ResponseEntity<?> removeAadharImage(Authentication authentication) {
 
-//    @PatchMapping(value = "/update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-//    public ResponseEntity<?> updateProfile(
-//            Authentication authentication,
-//            @ModelAttribute UpdateUserRequest request
-//    ) {
-//
-//        if (authentication == null || !authentication.isAuthenticated()) {
-//            throw new UnauthorizedException("Unauthorized");
-//        }
-//
-//        Long userId = Long.valueOf(authentication.getName());
-//
-//        String verification_token = profileService.updateProfile(userId, request);
-//
-//        if (verification_token != null) {
-//            return ResponseEntity
-//                    .status(HttpStatus.ACCEPTED)
-//                    .body(Map.of(
-//                            "message", "Verification required",
-//                            "verification_token", verification_token
-//                    ));
-//        }
-//
-//        return ResponseEntity.ok(
-//                Map.of("message", "Profile updated successfully")
-//        );
-//    }
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new UnauthorizedException("Unauthorized");
+        }
+
+        Long userId = Long.parseLong(authentication.getName());
+
+        profileService.removeAadhaar(userId);
+
+        return ResponseEntity.ok(
+                Map.of("message", "Aadhaar image removed successfully")
+        );
+    }
+
+
 
 
     /* ===================== LOGIN (PHONE OTP) ===================== */
@@ -325,6 +307,24 @@ public class AuthController {
 //                Map.of("message", "Account deactivated successfully")
 //        );
 //    }
+
+    @GetMapping("/me")
+    public ResponseEntity<?> getCurrentUser(Authentication authentication) {
+
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new UnauthorizedException("Unauthorized");
+        }
+
+        Long userId = Long.parseLong(authentication.getName());
+
+        return ResponseEntity.ok(profileService.getCurrentUser(userId));
+    }
+
+    @GetMapping("/users")
+    public ResponseEntity<?> getAllUsers() {
+        return ResponseEntity.ok(profileService.getAllUsers());
+    }
+
 
     @PostMapping("/refresh")
     public ResponseEntity<LoginResponse> refresh(

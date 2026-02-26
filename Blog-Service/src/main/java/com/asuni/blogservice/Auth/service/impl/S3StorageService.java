@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 import java.util.UUID;
@@ -34,15 +35,41 @@ public class S3StorageService implements FileStorageService {
 
             s3Client.putObject(
                     putObjectRequest,
-                    RequestBody.fromBytes(file.getBytes())
+                    RequestBody.fromInputStream(file.getInputStream(), file.getSize())
             );
 
-            return "https://" + bucketName + ".s3.amazonaws.com/" + fileName;
 
+//            return "https://" + bucketName + ".s3.amazonaws.com/" + fileName;
+
+                return  fileName ;
         } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException("File upload failed: " + e.getMessage());
         }
 
     }
+
+    @Override
+    public void deleteFile(String fileKey) {
+
+        try {
+
+            if (fileKey == null || fileKey.isBlank()) {
+                return;
+            }
+
+            DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(fileKey)
+                    .build();
+
+            s3Client.deleteObject(deleteObjectRequest);
+
+        } catch (Exception e) {
+            throw new RuntimeException("File deletion failed: " + e.getMessage());
+        }
+    }
+
+
+
 }

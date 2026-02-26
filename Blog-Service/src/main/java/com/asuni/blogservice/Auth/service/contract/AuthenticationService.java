@@ -11,14 +11,9 @@ public interface AuthenticationService {
 
     LoginResponse login(LoginRequest request);
 
-    /**
-     * Generates OTP and returns phone_login_token
-     */
     PhoneLoginResponse sendPhoneLoginOtp(LoginPhoneRequest request);
 
-    /**
-     * Verifies OTP and returns AUTH token
-     */
+
     LoginResponse  verifyPhoneLoginOtp(VerifyPhoneOtpRequest request);
 
     LoginResponse refreshToken(RefreshTokenRequest request);

@@ -102,7 +102,7 @@ public class User {
     @Column(nullable = false)
     private LocalDate dateOfBirth;
 
-    @Column(length = 500 , nullable = false)
+    @Column(length = 500 )
     private String aadharImageUrl;
 
     @Column(nullable = false, length = 50)

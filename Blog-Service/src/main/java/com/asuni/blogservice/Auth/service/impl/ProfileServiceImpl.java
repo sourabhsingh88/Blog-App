@@ -3,6 +3,7 @@ package com.asuni.blogservice.Auth.service.impl;
 
 import com.asuni.blogservice.Auth.dto.request.UpdateUserRequest;
 import com.asuni.blogservice.Auth.dto.response.UpdateProfileResponse;
+import com.asuni.blogservice.Auth.dto.response.UserResponse;
 import com.asuni.blogservice.Auth.entity.User;
 import com.asuni.blogservice.Auth.enums.OtpType;
 import com.asuni.blogservice.Auth.repository.UserRepository;
@@ -16,6 +17,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 
 @Service
 @RequiredArgsConstructor
@@ -25,6 +29,26 @@ public class ProfileServiceImpl implements ProfileService {
     private final OtpService otpService;
     private final JwtUtil jwtUtil;
     private final FileStorageService fileStorageService;
+
+    @Override
+    @Transactional(readOnly = true)
+    public UserResponse getCurrentUser(Long userId) {
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BadRequestException("User not found"));
+
+        return mapToResponse(user);
+    }
+    @Override
+    @Transactional(readOnly = true)
+    public List<UserResponse> getAllUsers() {
+
+        return userRepository.findAll()
+                .stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+
 
     @Override
     @Transactional
@@ -140,12 +164,17 @@ public class ProfileServiceImpl implements ProfileService {
             throw new BadRequestException("Profile picture must be an image");
         }
 
-        String profileUrl = fileStorageService.uploadFile(profilePicture, "profile");
-        user.setProfilePictureUrl(profileUrl);
+        String newKey = fileStorageService.uploadFile(profilePicture, "profile");
+
+        if (user.getProfilePictureUrl() != null) {
+            fileStorageService.deleteFile(user.getProfilePictureUrl());
+        }
+
+        user.setProfilePictureUrl(newKey);
+
 
         userRepository.save(user);
     }
-
     @Override
     @Transactional
     public void updateAadhaar(Long userId, MultipartFile aadhaarImage) {
@@ -162,118 +191,68 @@ public class ProfileServiceImpl implements ProfileService {
             throw new BadRequestException("Aadhaar must be an image");
         }
 
-        String aadhaarUrl = fileStorageService.uploadFile(aadhaarImage, "aadhaar");
-        user.setAadharImageUrl(aadhaarUrl);
+        String newKey = fileStorageService.uploadFile(aadhaarImage, "aadhaar");
+
+        if (user.getAadharImageUrl() != null) {
+            fileStorageService.deleteFile(user.getAadharImageUrl());
+        }
+
+        user.setAadharImageUrl(newKey);
+
 
         userRepository.save(user);
     }
+    @Override
+    @Transactional
+    public void removeAadhaar(Long userId) {
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BadRequestException("User not found"));
+
+        if (user.getAadharImageUrl() != null) {
+            fileStorageService.deleteFile(user.getAadharImageUrl());
+            user.setAadharImageUrl(null);
+            user.setAadhaarVerified(false);
+        }
+
+        userRepository.save(user);
+    }
+
+
+
+    @Override
+    @Transactional
+    public void removeProfilePicture(Long userId) {
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BadRequestException("User not found"));
+
+        if (user.getProfilePictureUrl() != null) {
+            fileStorageService.deleteFile(user.getProfilePictureUrl());
+            user.setProfilePictureUrl(null);
+        }
+
+        userRepository.save(user);
+    }
+
+    private UserResponse mapToResponse(User user) {
+
+        return UserResponse.builder()
+                .id(user.getId())
+                .user_name(user.getUsername())
+                .email(user.getEmail())
+                .full_name(user.getFullName())
+                .phone_number(user.getPhoneNumber())
+                .gender(user.getGender())
+                .date_of_birth(user.getDateOfBirth())
+                .preferred_language(user.getPreferredLanguage())
+                .profile_picture_url(user.getProfilePictureUrl())
+                .email_verified(user.isEmailVerified())
+                .phone_number_verified(user.isPhoneNumberVerified())
+                .build();
+    }
+
+
+
 }
 
-//
-//    @Override
-//    @Transactional
-//    public String updateProfile(Long userId, UpdateUserRequest request) {
-//
-//        User user = userRepository.findById(userId)
-//                .orElseThrow(() -> new BadRequestException("User not found"));
-//
-//        boolean emailChanged = false;
-//        boolean phoneChanged = false;
-//
-//        // -------- NON-SENSITIVE --------
-//
-//        if (request.getFull_name() != null) {
-//            user.setFull_name(request.getFull_name());
-//        }
-//
-//        if (request.getGender() != null) {
-//            user.setGender(request.getGender());
-//        }
-//
-//        if (request.getDate_of_birth() != null) {
-//            user.setDate_of_birth(request.getDate_of_birth());
-//        }
-//
-//        // -------- EMAIL CHANGE --------
-//
-//        if (request.getEmail() != null &&
-//                !request.getEmail().equals(user.getEmail())) {
-//
-//            if (userRepository.existsByEmail(request.getEmail())) {
-//                throw new BadRequestException("Email already in use");
-//            }
-//
-//            user.setEmail(request.getEmail());
-//            user.setEmailVerified(false);
-//
-//            otpService.generateEmailOtp(
-//                    request.getEmail(),
-//                    OtpType.EMAIL_VERIFICATION
-//            );
-//
-//            emailChanged = true;
-//        }
-//
-//        // -------- PHONE CHANGE --------
-//
-//        if (request.getPhone_number() != null &&
-//                !request.getPhone_number().equals(user.getPhone_number())) {
-//
-//            if (userRepository.existsByPhoneNumber(request.getPhone_number())) {
-//                throw new BadRequestException("Phone number already in use");
-//            }
-//
-//            user.setPhone_number(request.getPhone_number());
-//            user.setPhoneNumberVerified(false);
-//
-//            otpService.generatePhoneOtp(
-//                    request.getPhone_number(),
-//                    OtpType.PHONE_VERIFICATION
-//            );
-//
-//            phoneChanged = true;
-//        }
-//
-//        // -------- AADHAAR UPDATE --------
-//
-//        if (request.getAadhaar_image() != null &&
-//                !request.getAadhaar_image().isEmpty()) {
-//
-//            if (!request.getAadhaar_image().getContentType().startsWith("image")) {
-//                throw new BadRequestException("Aadhaar must be an image file");
-//            }
-//
-//            String aadhaarUrl = fileStorageService.uploadFile(
-//                    request.getAadhaar_image(),
-//                    "aadhar"
-//            );
-//
-//            user.setAadharImageUrl(aadhaarUrl);
-//        }
-//
-//        userRepository.save(user);
-//
-//        // -------- TOKEN GENERATION --------
-//
-//        if (emailChanged || phoneChanged) {
-//
-//            String type;
-//
-//            if (emailChanged && phoneChanged) {
-//                type = "BOTH_VERIFICATION";
-//            } else if (emailChanged) {
-//                type = "EMAIL_VERIFICATION";
-//            } else {
-//                type = "PHONE_VERIFICATION";
-//            }
-//
-//            return jwtUtil.generateOtpToken(
-//                    user.getEmail(),
-//                    user.getPhone_number(),
-//                    type
-//            );
-//        }
-//
-//        return null;
-//    }
-//}
